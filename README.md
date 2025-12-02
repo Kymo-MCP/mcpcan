@@ -53,28 +53,49 @@ To view our official website address, simply click <a href="https://www.mcpcan.c
 
 For detailed deployment instructions, please refer to our [Deployment Guide](https://kymo-mcp.github.io/mcpcan-deploy/).
 
+### 1. Get the Deployment Repository
+
 ```bash
-# Install Helm Chart repository
-helm repo add mcpcan https://kymo-mcp.github.io/mcpcan-deploy/
+# GitHub (International)
+git clone https://github.com/Kymo-MCP/mcpcan-deploy.git
+cd mcpcan-deploy
 
-# Update Helm repository
-helm repo update mcpcan
+# Gitee (Recommended for China)
+git clone https://gitee.com/kymomcp/mcpcan-deploy.git
+cd mcpcan-deploy
+```
 
-# Install latest version
-helm install mcpcan mcpcan/mcpcan-deploy
+### 2. Installation
 
-# Deploy with public IP
-helm install mcpcan mcpcan/mcpcan-deploy \
-  --set global.publicIP=192.168.1.100 \
-  --set infrastructure.mysql.auth.rootPassword=secure-password \
-  --set infrastructure.redis.auth.password=secure-password \
-  --namespace mcpcan --create-namespace --timeout 600s --wait
+**Fast Install (Recommended)**
 
-# Deploy with domain name
-helm install mcpcan mcpcan/mcpcan-deploy \
-  --set global.domain=mcp.example.com \
-  --set infrastructure.mysql.auth.rootPassword=secure-password \
-  --set infrastructure.redis.auth.password=secure-password \
+Suitable for clean Linux servers. Automatically installs k3s, ingress-nginx, Helm, and deploys the MCPCAN platform.
+
+```bash
+# Standard Install (International Mirrors)
+./scripts/install-fast.sh
+
+# Accelerated Install (China Mirrors)
+./scripts/install-fast.sh --cn
+```
+
+Once successful, access `http://<Your Public IP>` to start using it.
+
+**Custom Install (Helm)**
+
+Suitable for scenarios requiring custom domains, HTTPS, or modifying default configurations.
+
+```bash
+# 1. Install dependencies (Skip if k3s/Helm are already installed)
+./scripts/install-run-environment.sh       # International Mirrors
+# ./scripts/install-run-environment.sh --cn  # China Mirrors
+
+# 2. Copy and modify configuration
+cp helm/values.yaml helm/values-custom.yaml
+# Edit helm/values-custom.yaml to set global.domain and other parameters
+
+# 3. Install the platform
+helm install mcpcan ./helm -f helm/values-custom.yaml \
   --namespace mcpcan --create-namespace --timeout 600s --wait
 ```
 
