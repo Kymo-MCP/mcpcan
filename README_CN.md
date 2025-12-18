@@ -7,7 +7,7 @@
 <div align="center">
 
 # MCP CAN
-一款开源集中管理MCP服务的平台</br>
+一款开源集中管理MCP服务的平台服务</br>
 MCPCAN采用容器技术实现MCP服务的灵活部署，有效解决潜在的系统配置冲突。它支持多协议兼容与转换，可实现不同MCP服务架构之间的无缝集成。此外，它还提供可视化监控、安全认证和一站式部署功能。</br>
 
   <img src="https://img.shields.io/badge/Vue.js-3.2.47-4FC08D?style=for-the-badge&logo=vue.js&logoColor=ffffff" alt="Vue.js"/>

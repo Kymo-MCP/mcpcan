@@ -1,11 +1,11 @@
-
 <div align="center">
-  <img width="1872" height="932" alt="image" src="https://github.com/user-attachments/assets/a6d8796f-435d-48fd-9833-264a94a5ca1d" />
+  <img width="1872" height="932" alt="image" src="image.png" />
 </div>
 
 <div align="center">
 
 # MCP CAN
+
 The open source integration platform for MCP Server.</br>
 MCPCAN uses containers for flexible deployment of MCP services, resolving potential system configuration conflicts. It supports multi-protocol compatibility and conversion, enabling seamless integration between different MCP service architectures. It also provides visual monitoring, security authentication, and one-stop deployment capabilities.</br>
 
@@ -13,19 +13,21 @@ MCPCAN uses containers for flexible deployment of MCP services, resolving potent
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript" alt="TypeScript"/>
   <img src="https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql" alt="MySQL"/>
   <img src="https://img.shields.io/badge/Kubernetes-1.28-326ce5?style=for-the-badge&logo=kubernetes" alt="Kubernetes"/>
-  <img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge" alt="GPL-3.0"/>
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="Apache 2.0"/>
 </div>
 <p align="center">
-   <strong>English</strong> | <a href="./README_CN.md">中文版</a>  | <a href="./README_CN.md">繁體字</a> <br>
-   <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> | <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a>  
+   <strong>English</strong> | <a href="./README_CN.md">中文版</a> <br>
+   <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> | <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a><br>
+   <a href="https://www.mcpcan.com/docs/en/guide/welcome
+   "><u>Document</a></u>
 </p>
 <p align="center">
     <a href="https://demo.mcpcan.com" target="_blank">
         <img alt="Static Badge" src="https://img.shields.io/badge/Product-F04438"></a>
     <a href="https://dify.ai/pricing" target="_blank">
         <img alt="Static Badge" src="https://img.shields.io/badge/free-pricing?logo=free&color=%20%23155EEF&label=pricing&labelColor=%20%23528bff"></a>
-    <a href="https://discord.gg/FngNHpbcY7" target="_blank">
-        <img src="https://img.shields.io/discord/1082486657678311454?logo=discord&labelColor=%20%235462eb&logoColor=%20%23f5f5f5&color=%20%235462eb"
+    <a href="https://discord.gg/EegGj7G7Bz" target="_blank">
+        <img src="https://img.shields.io/discord/1428637640856571995?logo=discord&labelColor=%20%235462eb&logoColor=%20%23f5f5f5&color=%20%235462eb"
             alt="chat on Discord"></a>
     <a href="https://twitter.com/intent/follow?screen_name=MCPCAN" target="_blank">
         <img src="https://img.shields.io/twitter/follow/MCPCAN?logo=X&color=%20%23f5f5f5"
@@ -35,8 +37,8 @@ MCPCAN uses containers for flexible deployment of MCP services, resolving potent
 MCPCan is an open-source platform focused on efficient management of MCP (Model Context Protocol) services, providing DevOps and development teams with comprehensive MCP service lifecycle management capabilities through a modern web interface.
 MCPCan supports multi-protocol compatibility and conversion, enabling seamless integration between different MCP service architectures while providing visual monitoring, security authentication, and one-stop deployment capabilities.
 
-
 ## Introduction
+
 MCPCan is an open-source platform focused on efficient management of MCP (Model Context Protocol) services,Providing DevOps and development teams with comprehensive MCP service lifecycle management capabilities through a modern web interface.
 MCPCan supports multi-protocol compatibility and conversion, enabling seamless integration between different MCP service architectures while providing visual monitoring, security authentication, and one-stop deployment capabilities.<br/>
 
@@ -50,9 +52,11 @@ MCPCan supports multi-protocol compatibility and conversion, enabling seamless i
 - **📈 Scalability**: Cloud-native architecture based on Kubernetes
 
 ## ✨Demon & MainSite
-For the best demo experience, try  <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> directly.<br>
+
+For the best demo experience, try <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> directly.<br>
 [MP4]<br>
 To view our official website address, simply click <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a>.
+
 ## 👨‍🚀Quickstart
 
 For detailed deployment instructions, please refer to our [Deployment Guide](https://kymo-mcp.github.io/mcpcan-deploy/).
@@ -156,9 +160,11 @@ If you discover a security vulnerability, please refer to our [Security Policy](
 
 Copyright (c) 2024-2025 MCPCan Team, All rights reserved.
 
-Licensed under The GNU General Public License version 3 (GPLv3) (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-https://www.gnu.org/licenses/gpl-3.0.html
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
