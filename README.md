@@ -6,7 +6,6 @@
 
 # MCP CAN
 
-
 The open source integration platform for MCP Server.</br>
 MCPCAN uses containers for flexible deployment of MCP services, resolving potential system configuration conflicts. It supports multi-protocol compatibility and conversion, enabling seamless integration between different MCP service architectures. It also provides visual monitoring, security authentication, and one-stop deployment capabilities.</br>
 
@@ -60,7 +59,12 @@ MCPCan supports multi-protocol compatibility and conversion, enabling seamless i
 ## ✨ Demo and Official Website
 
 For the best demo experience, try directly <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a>.<br>
-[MP4]<br>
+<video width="640" height="360" controls>
+
+  <source src="demo.mp4" type="video/mp4">
+
+</video><br>
+Watch our demo video on Bilibili: <a href="https://www.bilibili.com/video/BV1htBXBbECr?t=3.2">BV1htBXBbECr</a><br>
 To view our official website address, simply click <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a>.
 
 ## 👨‍🚀 Quick Start
