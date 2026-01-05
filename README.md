@@ -21,10 +21,6 @@ MCPCAN uses containers for flexible deployment of MCP services, resolving potent
    <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> | <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a><br>
    <a href="https://www.mcpcan.com/docs/en/guide/welcome
    "><u>Document</a></u>
-   <strong>English</strong> | <a href="./README_CN.md">中文版</a> <br>
-   <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> | <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a><br>
-   <a href="https://www.mcpcan.com/docs/en/guide/welcome
-   "><u>Document</a></u>
 </p>
 <p align="center">
     <a href="https://demo.mcpcan.com" target="_blank">
