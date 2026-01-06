@@ -1,9 +1,6 @@
 <div align="center">
-  <img width="1872" height="932" alt="image" src="image_cn.png" />
+  <img width="1872" height="932" alt="image" src="images/image_cn.png" />
 </div>
-
-<div align="center">
-
 <div align="center">
 
 # MCP CAN
@@ -175,7 +172,7 @@ http://www.apache.org/licenses/LICENSE-2.0
 - 🐛 [问题追踪](https://github.com/Kymo-MCP/mcpcan/issues)
 - 📧 [邮件列表](mailto:opensource@kymo.cn)
 - 🌐 微信<br>
-  <img src="35c3c9b9cd5a5c89ca7e4e554e4292ba.jpg" alt="alt text" width="170">
+  <img src="images/WeChat group QR code.jpg" alt="alt text" width="170">
 
 ## 💕 致谢
 

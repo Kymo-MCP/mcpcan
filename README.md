@@ -1,5 +1,6 @@
 <div align="center">
-  <img width="1872" height="932" alt="image" src="image.png" />
+  <img width="1872" height="932" alt="image" src="images/image.png" />
+
 </div>
 
 <div align="center">
@@ -14,13 +15,8 @@ MCPCAN uses containers for flexible deployment of MCP services, resolving potent
   <img src="https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql" alt="MySQL"/>
   <img src="https://img.shields.io/badge/Kubernetes-1.28-326ce5?style=for-the-badge&logo=kubernetes" alt="Kubernetes"/>
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="Apache 2.0"/>
-  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="Apache 2.0"/>
 </div>
 <p align="center">
-   <strong>English</strong> | <a href="./README_CN.md">中文版</a> <br>
-   <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> | <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a><br>
-   <a href="https://www.mcpcan.com/docs/en/guide/welcome
-   "><u>Document</a></u>
    <strong>English</strong> | <a href="./README_CN.md">中文版</a> <br>
    <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a> | <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a><br>
    <a href="https://www.mcpcan.com/docs/en/guide/welcome
@@ -59,11 +55,7 @@ MCPCan supports multi-protocol compatibility and conversion, enabling seamless i
 ## ✨ Demo and Official Website
 
 For the best demo experience, try directly <a href="https://demo.mcpcan.com">DemoSite : demo.mcpcan.com</a>.<br>
-<video width="640" height="360" controls>
-
-  <source src="demo.mp4" type="video/mp4">
-
-</video><br>
+</video>
 Watch our demo video on Bilibili: <a href="https://www.bilibili.com/video/BV1htBXBbECr?t=3.2">BV1htBXBbECr</a><br>
 To view our official website address, simply click <a href="https://www.mcpcan.com">MainSite : www.mcpcan.com</a>.
 
@@ -183,7 +175,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 - 🐛 [Issue Tracker](https://github.com/Kymo-MCP/mcpcan/issues)
 - 📧 [Mailing List](mailto:opensource@kymo.cn)
 - 🌐 WeChat<br>
-  <img src="35c3c9b9cd5a5c89ca7e4e554e4292ba.jpg" alt="alt text" width="170">
+  <img src="images/WeChat group QR code.jpg" alt="alt text" width="170">
 
 ## 💕 Acknowledgments
 
