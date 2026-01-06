@@ -55,8 +55,7 @@
             <el-pagination
               background
               :total="pagerConfig.total"
-              :page="pagerConfig.page"
-              :limit="pagerConfig.pageSize"
+              :current-page="pagerConfig.page"
               :page-size="pagerConfig.pageSize"
               @current-change="handlePageChange"
             />
