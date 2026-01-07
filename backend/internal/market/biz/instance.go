@@ -1147,6 +1147,7 @@ func (biz *InstanceBiz) UpdateInstanceForHosting(ctx context.Context, req *insta
 	oriInstance.InitScript = initScript
 	oriInstance.Command = command
 	oriInstance.ServicePath = req.ServicePath
+	oriInstance.PackageID = packageID
 	oriInstance.SourceConfig = json.RawMessage([]byte(mcpServers))
 	oriInstance.ImgAddr = imgAddress
 	oriInstance.EnvironmentVariables = toEnvs
