@@ -1011,10 +1011,9 @@ const init = async () => {
     // edit instance
     if (query.instanceId) {
       handleGetDetail()
-    } else {
-      // 默认选中第一个环境变量;所以上诉均没有return
-      handleChangeEnvironmentId(envList.value[0]?.id)
     }
+    // 默认选中第一个环境变量;所以上诉均没有return
+    handleChangeEnvironmentId(envList.value[0]?.id)
   } finally {
     loadingInstance?.close()
   }
