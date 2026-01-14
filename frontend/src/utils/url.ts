@@ -39,10 +39,9 @@ export const useRouterHooks = () => {
       const { url, data = {}, isOpen = false } = params
 
       // 如果当前路由存在 layout 参数并且目标没有 layout，则带上当前 layout
-
       let paramsData = {
-        ...data,
         layout: router.currentRoute.value.query?.layout,
+        ...data,
       }
 
       if (isOpen) {

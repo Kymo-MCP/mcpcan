@@ -156,6 +156,25 @@ export const TokenAPI = {
   },
 }
 
+export const deBugAPI = {
+  // 实例工具列表
+  toolList(data: any) {
+    return request<any, any>({
+      url: `/market/instance/list-tools`,
+      method: 'POST',
+      data,
+    })
+  },
+  // 实例工具调用
+  toolCall(data: any) {
+    return request<any, any>({
+      url: `/market/instance/call-tools`,
+      method: 'POST',
+      data,
+    })
+  },
+}
+
 // 列表请求
 export interface TableData {
   /** 页码 */

@@ -4,6 +4,7 @@ import { useMcpStoreHook } from '@/stores'
 import { useRouterHooks } from '@/utils/url'
 import { instanceTotal, instanceStart, instanceStop, instanceConnect } from '@/utils/logo'
 import { AccessType } from '@/types/instance'
+import { useMcpStore } from '@/stores/modules/mcp-store'
 
 export const useInstanceTableHooks = () => {
   const { t } = useI18n()
@@ -24,6 +25,7 @@ export const useInstanceTableHooks = () => {
   const { jumpToPage } = useRouterHooks()
   // const mcpHook = useMcpStoreHook()
   const { accessTypeOptions, mcpProtocolOptions } = useMcpStoreHook()
+  const { currentInstance } = toRefs(useMcpStore())
   const instanceCount = ref<any>({})
   const selection = ref({
     showSelect: true,
@@ -264,6 +266,7 @@ export const useInstanceTableHooks = () => {
     templateList,
     timer,
     selection,
+    currentInstance,
     agentSyncDialog,
   }
 }

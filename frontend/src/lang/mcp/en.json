@@ -90,6 +90,7 @@
         "view": "View",
         "log": "Container Logs",
         "accessLogs": "Access Logs",
+        "debugTool": "Debug Tool",
         "stop": "Stop",
         "start": "Start",
         "reStart": "Restart",
@@ -275,6 +276,19 @@
       "passthrough": "Passthrough",
       "account": "Account",
       "isEnable": "Enable"
+    },
+    "debugTool": {
+      "list": "Tools",
+      "input": "Input Parameters",
+      "action": "Action",
+      "output": "Entry Output",
+      "run": "Run",
+      "copyInput": "Copy Input",
+      "copyOutput": "Copy Output",
+      "noData": "No Data",
+      "keyPlaceholder": "Enter name to filter...",
+      "runSuccess": "Tool execution successful",
+      "runFail": "Tool execution error"
     }
   }
 }

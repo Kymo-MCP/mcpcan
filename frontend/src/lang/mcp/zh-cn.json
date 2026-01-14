@@ -90,6 +90,7 @@
         "view": "查看",
         "log": "容器日志",
         "accessLogs": "访问日志",
+        "debugTool": "调试工具",
         "stop": "停止",
         "start": "启动",
         "reStart": "重启",
@@ -275,6 +276,19 @@
       "passthrough": "透传",
       "account": "账号",
       "isEnable": "是否启用"
+    },
+    "debugTool": {
+      "list": "工具列表",
+      "input": "入参",
+      "action": "操作",
+      "output": "出参",
+      "run": "运行",
+      "copyInput": "复制入参",
+      "copyOutput": "复制出参",
+      "noData": "暂无数据",
+      "keyPlaceholder": "输入名称进行筛选...",
+      "runSuccess": "工具执行成功",
+      "runFail": "工具执行错误"
     }
   }
 }

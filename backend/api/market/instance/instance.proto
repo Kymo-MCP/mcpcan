@@ -789,8 +789,8 @@ message UpdateOpenapiRequest {
 }
 
 message ListToolsRequest {
-    // @inject_tag: json:"instanceID" form:"instanceID" uri:"instanceID" desc:"Instance ID"
-    string instanceID = 1;
+    // @inject_tag: json:"instanceId" form:"instanceId" uri:"instanceId" desc:"Instance ID"
+    string instanceId = 1;
     // @inject_tag: json:"domain" form:"domain" desc:"Domain"
     string domain = 2;
 }
@@ -799,8 +799,8 @@ message ListToolsResp {
 }
 
 message CallToolRequest {
-    // @inject_tag: json:"instanceID" form:"instanceID" uri:"instanceID" desc:"Instance ID"
-    string instanceID = 1;
+    // @inject_tag: json:"instanceId" form:"instanceId" uri:"instanceId" desc:"Instance ID"
+    string instanceId = 1;
     // @inject_tag: json:"domain" form:"domain" desc:"Domain"
     string domain = 2;
     // @inject_tag: json:"toolName" form:"toolName" desc:"Tool name"

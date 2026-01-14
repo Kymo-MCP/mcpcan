@@ -657,8 +657,13 @@ func createCozeTools(domain string, insertInfo *model.InsertIntelligentInfo, mcp
 			token = insertHeader.Token
 		}
 
+		name := mcpInstance.InstanceName
+		if len(name) >= 30 {
+			name = mcpInstance.InstanceName[:50]
+		}
+
 		resp, err := coze.RegisterPlugin(&coze.RegisterPluginRequest{
-			Name: mcpInstance.InstanceName,
+			Name: name,
 			Desc: desc,
 			URL:  mcpServerUrl,
 			Icon: coze.IconRequest{

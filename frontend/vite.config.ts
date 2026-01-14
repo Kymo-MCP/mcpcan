@@ -21,13 +21,13 @@ export default defineConfig({
     // 可选配置
     port: 3000, // HTTPS 默认端口
     proxy: {
-      // '/api/authz': {
-      //   target: 'https://mcp-dev.itqm.com',
-      //   changeOrigin: true,
-      //   // rewrite: (path: string) => path.replace(/^\/api/, ''),
-      // },
+      '/api/authz': {
+        target: 'https://mcp-dev.itqm.com',
+        changeOrigin: true,
+        // rewrite: (path: string) => path.replace(/^\/api/, ''),
+      },
       '/api': {
-        target: 'http://localhost:80',
+        target: 'https://mcp-dev.itqm.com',
         changeOrigin: true,
         // rewrite: (path: string) => path.replace(/^\/api/, ''),
       },

@@ -13,6 +13,7 @@ export const useMcpStore = defineStore('mcp', () => {
   const pvcList = ref<any[]>([])
   const volumeList = ref<any[]>([])
   const currentMCP = useStorage('currentMCP', {} as any)
+  const currentInstance = useStorage('currentInstance', {} as any)
 
   // source of instance list
   const sourceOptions = computed(() => [
@@ -84,6 +85,7 @@ export const useMcpStore = defineStore('mcp', () => {
     accessTypeOptions,
     mcpProtocolOptions,
     currentMCP,
+    currentInstance,
     handleGetPackageList,
     handleGetEnvList,
     handleGetNodeList,

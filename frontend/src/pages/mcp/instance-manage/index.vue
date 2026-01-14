@@ -219,6 +219,9 @@
                   >
                     {{ t('mcp.instance.action.accessLogs') }}
                   </el-dropdown-item>
+                  <el-dropdown-item command="handleDebugTools">
+                    {{ t('mcp.instance.action.debugTool') }}
+                  </el-dropdown-item>
                   <el-dropdown-item command="handleEditInstance">
                     {{ t('env.run.action.edit') }}
                   </el-dropdown-item>
@@ -343,6 +346,7 @@ const {
   timer,
   selection,
   agentSyncDialog,
+  currentInstance,
   meta,
 } = useInstanceTableHooks()
 
@@ -544,6 +548,21 @@ const handleViewStatus = async (instanceInfo: InstanceResult) => {
 }
 
 /**
+ * Handle debug tools
+ * @param row - item of instance data
+ */
+const handleDebugTools = (instanceInfo: InstanceResult) => {
+  currentInstance.value = instanceInfo
+  jumpToPage({
+    url: '/debug-tools',
+    data: {
+      instanceId: instanceInfo.instanceId,
+      layout: false,
+    },
+  })
+}
+
+/**
  * Handle delete instance
  * @param instanceId - instance id
  */
@@ -593,6 +612,9 @@ const handleCommand = (callback: string, row: InstanceResult) => {
       break
     case 'handleViewStatus':
       handleViewStatus(row)
+      break
+    case 'handleDebugTools':
+      handleDebugTools(row)
       break
     case 'handleDeleteInstance':
       handleDeleteInstance(row.instanceId)

@@ -937,7 +937,7 @@ func (s *InstanceService) ListToolsHandler(c *gin.Context) {
 		return
 	}
 
-	tools, err := biz.GInstanceBiz.ListTools(c.Request.Context(), req.InstanceID, req.Domain)
+	tools, err := biz.GInstanceBiz.ListTools(c.Request.Context(), req.InstanceId, req.Domain)
 	if err != nil {
 		common.GinError(c, i18nresp.CodeInternalError, fmt.Sprintf("failed to list tools: %s", err.Error()))
 		return
@@ -959,7 +959,7 @@ func (s *InstanceService) CallToolHandler(c *gin.Context) {
 		}
 	}
 
-	resp, err := biz.GInstanceBiz.CallTool(c.Request.Context(), req.InstanceID, req.ToolName, args, req.Domain)
+	resp, err := biz.GInstanceBiz.CallTool(c.Request.Context(), req.InstanceId, req.ToolName, args, req.Domain)
 	if err != nil {
 		common.GinError(c, i18nresp.CodeInternalError, fmt.Sprintf("failed to call tool: %s", err.Error()))
 		return
