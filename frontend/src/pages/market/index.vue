@@ -25,7 +25,21 @@
           </div>
           <div class="mt-3 flex flex-col gap-2">
             <div
-              v-for="type in typeMap"
+              class="w-full flex items-center gap-3 rounded-md px-3 py-2 text-left type-item"
+              :class="{ 'active-type': categoryName === '' }"
+              @click="selectType('')"
+            >
+              <div class="flex items-center gap-3 w-full justify-between">
+                <span class="text-sm">
+                  <el-icon>
+                    <i class="icon iconfont MCP-qita"></i>
+                  </el-icon>
+                  {{ t('market.type.all') }}
+                </span>
+              </div>
+            </div>
+            <div
+              v-for="type in typeMap.filter((item) => item.count > 0)"
               :key="type.value"
               class="w-full flex items-center gap-3 rounded-md px-3 py-2 text-left type-item"
               :class="{ 'active-type': categoryName === type.value }"
@@ -129,13 +143,7 @@ const handleGetMarketList = async () => {
     typeCount.value = categories || []
     typeMap.value = typeMap.value.map((type) => ({
       ...type,
-      count:
-        categories.find((item: any) => item.code === type.value)?.total ||
-        (type.value
-          ? 0
-          : categories
-              .map((item: any) => Number(item.total))
-              .reduce((sum: number, item: number) => sum + item, 0)),
+      count: categories.find((item: any) => item.code === type.value)?.total || 0,
     }))
   } finally {
     loading.value = false

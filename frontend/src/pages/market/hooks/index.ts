@@ -8,7 +8,6 @@ export const useMarketListHooks = () => {
   const categoryName = useStorage('market-list-category', '')
   const typeCount = ref<any>([])
   const typeMap = ref([
-    { label: t('market.type.all'), value: '', icon: 'MCP-qita', count: 0 },
     { label: t('market.type.test'), value: 'test', icon: 'MCP-ceshi', count: 0 },
     {
       label: t('market.type.browser-automation'),
