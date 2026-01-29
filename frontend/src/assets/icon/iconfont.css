@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5029591 */
-  src: url('iconfont.woff2?t=1766971861637') format('woff2'),
-       url('iconfont.woff?t=1766971861637') format('woff'),
-       url('iconfont.ttf?t=1766971861637') format('truetype'),
-       url('iconfont.svg?t=1766971861637#iconfont') format('svg');
+  src: url('iconfont.woff2?t=1768985354820') format('woff2'),
+       url('iconfont.woff?t=1768985354820') format('woff'),
+       url('iconfont.ttf?t=1768985354820') format('truetype'),
+       url('iconfont.svg?t=1768985354820#iconfont') format('svg');
 }
 
 .iconfont {
@@ -12,6 +12,34 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.MCP-anquan:before {
+  content: "\e61d";
+}
+
+.MCP-jiedian:before {
+  content: "\e629";
+}
+
+.MCP-daili:before {
+  content: "\e632";
+}
+
+.MCP-tancerenwu:before {
+  content: "\e621";
+}
+
+.MCP-tool:before {
+  content: "\e688";
+}
+
+.MCP-zhilian:before {
+  content: "\e654";
+}
+
+.MCP-function_danjiedian:before {
+  content: "\e98c";
 }
 
 .MCP-richeng:before {

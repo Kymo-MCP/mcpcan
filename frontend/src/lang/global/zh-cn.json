@@ -86,7 +86,9 @@
     "back": "返回",
     "on": "开启",
     "off": "关闭",
-    "more": "更多"
+    "more": "更多",
+    "select": "选择",
+    "use": "使用"
   },
   "status": {
     "active": "启用",
@@ -120,7 +122,7 @@
     "initScript": "初始化脚本",
     "imgAddressTip1": "基于 python:3.12-alpine 镜像构建，轻量且兼容主流容器环境",
     "imgAddressTip2": "预装组件及版本明确锁定：",
-    "imgAddressTip3": "默认启动命令： mcp-hosting ，启动后将 MCP STDIO 协议转为 STEAMABLE_HTTP 协议运行。",
+    "imgAddressTip3": "默认启动命令： mcp-hosting ，启动后将 MCP STDIO 协议转为 STREAMABLE_HTTP 协议运行。",
     "env": "环境",
     "tools": "配套工具",
     "baseCommand": "系统基础命令",

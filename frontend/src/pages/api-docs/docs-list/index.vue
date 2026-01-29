@@ -1,13 +1,50 @@
 <template>
   <div v-loading="pageInfo.loading" :element-loading-text="pageInfo.loadingText">
     <!-- 头部区域 -->
-    <div class="flex justify-between page-header">
+    <!-- <div class="flex justify-between page-header">
       <div class="header-container">
         {{ t('api.pageDesc.title') }} <span class="desc">{{ t('api.pageDesc.desc') }}</span>
       </div>
       <mcp-button :icon="UploadFilled" @click="handleUpdatePackage">{{
         t('api.action.upload')
       }}</mcp-button>
+    </div> -->
+    <div class="flex-sub center link-hover mb-2">
+      <el-upload
+        class="upload-demo"
+        drag
+        :action="action"
+        multiple
+        :on-success="handleSuccess"
+        :headers="headers"
+        accept=".json, .yaml, application/json, application/yaml"
+      >
+        <div class="flex justify-between align-center upload-dragger-content">
+          <div class="title">
+            <div>{{ t('api.action.upload') }}</div>
+            <div class="desc">
+              <div class="my-1">JSON {{ t('api.pageDesc.openAI') }} (.json)</div>
+              <div>YAML {{ t('api.pageDesc.openAI') }} (.yaml)</div>
+            </div>
+          </div>
+          <div>
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              {{ t('code.desc.suport') }}
+            </div>
+          </div>
+          <div class="footer">
+            {{ t('code.desc.describe') }}
+            <div class="desc">
+              <div class="ml-8 mt-2">{{ t('api.pageDesc.text1') }}</div>
+              <div class="ml-8 mt-2">{{ t('api.pageDesc.text2') }}</div>
+              <div class="ml-8 mt-2">{{ t('api.pageDesc.text3') }}</div>
+              <div class="ml-8 mt-2">{{ t('api.pageDesc.text4') }}</div>
+              <div class="ml-8 mt-2">{{ t('api.pageDesc.text5') }}</div>
+            </div>
+          </div>
+        </div>
+      </el-upload>
     </div>
 
     <TablePlus
@@ -18,8 +55,9 @@
       :columns="columns"
       v-model:pageConfig="pageConfig"
       :handlerColumnConfig="{
-        width: '120px',
+        width: '180px',
         fixed: 'right',
+        align: 'center',
       }"
     >
       <template #action>
@@ -50,34 +88,15 @@
         </div>
       </template>
       <template #operation="{ row }">
-        <el-button
-          type="text"
-          size="small"
-          link
-          @click="handleViewCode(row)"
-          class="base-btn-link"
-          >{{ t('common.view') }}</el-button
-        >
-
-        <el-dropdown
-          trigger="click"
-          class="ml-4"
-          @click.stop
-          :show-arrow="false"
-          @command="(cmd: string) => handleCommand(cmd, row)"
-        >
-          <el-icon class="link-hover cursor-pointer"><More /></el-icon>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="handleDownload">
-                {{ t('common.download') }}
-              </el-dropdown-item>
-              <el-dropdown-item command="handleDelete">
-                <el-button type="danger" size="small" link>{{ t('common.delete') }}</el-button>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        <el-button type="text" size="small" link @click="handleViewCode(row)" class="base-btn-link">
+          {{ t('common.view') }}
+        </el-button>
+        <el-button type="text" size="small" link @click="handleDownload(row)" class="base-btn-link">
+          {{ t('common.download') }}
+        </el-button>
+        <el-button type="danger" size="small" link @click="handleDelete(row)">{{
+          t('common.delete')
+        }}</el-button>
       </template>
     </TablePlus>
   </div>
@@ -94,7 +113,8 @@ import codeLogo from '@/assets/logo/code.png'
 import zipLogo from '@/assets/logo/zip.png'
 import McpButton from '@/components/mcp-button/index.vue'
 
-const { t, tablePlus, columns, requestConfig, pageConfig, pageInfo } = useDocsTableHooks()
+const { t, tablePlus, columns, requestConfig, pageConfig, pageInfo, action, headers } =
+  useDocsTableHooks()
 const { jumpToPage } = useRouterHooks()
 
 /**
@@ -105,7 +125,13 @@ const handleUpdatePackage = () => {
     url: '/update-api-docs',
   })
 }
-
+const handleSuccess = (response: { code: number; data: { path: string } }) => {
+  if (response.code !== 0) {
+    return
+  }
+  init()
+  ElMessage.success(t('action.upload'))
+}
 /**
  * Handle view code package info
  */
@@ -207,5 +233,64 @@ onMounted(init)
   font-size: 16px;
   color: #999999;
   margin-left: 16px;
+}
+.upload-demo {
+  width: 100%;
+  color: var(--el-color-primary);
+  .title {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: left;
+    .desc {
+      font-size: 14px;
+      color: #999999;
+      font-weight: 400;
+      margin-left: 0;
+    }
+  }
+  .footer {
+    font-family:
+      PingFangSC,
+      PingFang SC;
+    font-weight: 600;
+    font-size: 20px;
+    // color: #cccccc;
+    line-height: 28px;
+    .desc {
+      font-family:
+        PingFangSC,
+        PingFang SC;
+      font-weight: 400;
+      font-size: 14px;
+      color: #999999;
+      line-height: 20px;
+      text-align: left;
+      font-style: normal;
+    }
+  }
+  :deep(.el-upload-dragger) {
+    border: 1px dashed var(--el-color-primary);
+    &:hover {
+      border-color: var(--el-color-primary-hover);
+      .el-icon--upload {
+        color: var(--el-color-primary-hover);
+      }
+      .el-upload__text {
+        color: var(--el-color-primary-hover);
+      }
+      .title {
+        color: var(--el-color-primary-hover);
+      }
+      .footer {
+        color: var(--el-color-primary-hover);
+      }
+    }
+  }
+  .el-icon--upload {
+    color: var(--el-color-primary);
+  }
+  .el-upload__text {
+    color: var(--el-color-primary);
+  }
 }
 </style>

@@ -1,6 +1,12 @@
 <template>
-  <el-dialog v-model="dialogInfo.visible" :title="dialogInfo.title" :show-close="false" :close-on-click-modal="false"
-    width="680px" top="20vh">
+  <el-dialog
+    v-model="dialogInfo.visible"
+    :title="dialogInfo.title"
+    :show-close="false"
+    :close-on-click-modal="false"
+    width="680px"
+    top="20vh"
+  >
     <template #header>
       <div class="flex items-center w-full">
         <span>{{ dialogInfo.title }}</span
@@ -33,8 +39,12 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item :label="t('agent.formData.accessName')" prop="accessName">
-          <el-input v-model="formModel.accessName" :placeholder="t('agent.placeholder.accessName')" maxlength="64"
-            show-word-limit />
+          <el-input
+            v-model="formModel.accessName"
+            :placeholder="t('agent.placeholder.accessName')"
+            maxlength="64"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item
           v-if="formModel.accessType === AgentType.COZE && formModel.subType === CozeType.TEAM"
@@ -87,6 +97,18 @@
             <el-input v-model="formModel.dbName" :placeholder="t('agent.placeholder.dbName')" />
           </el-form-item>
         </template>
+        <el-form-item
+          label="UID"
+          prop="cozeUserID"
+          v-if="formModel.accessType === AgentType.COZE && formModel.subType === CozeType.PERSON"
+        >
+          <el-input
+            v-model="formModel.cozeUserID"
+            :placeholder="t('agent.placeholder.cozeUserID')"
+            maxlength="32"
+            show-word-limit
+          />
+        </el-form-item>
         <!-- N8N -->
         <template v-if="formModel.accessType === 'N8N'">
           <el-form-item :label="t('agent.formData.baseUrl')" prop="baseUrl">
@@ -117,7 +139,7 @@
         <el-button @click="handleCancel" class="mr-2">{{ t('common.cancel') }}</el-button>
         <mcp-button @click="handleSubmit" :loading="dialogInfo.loading">{{
           t('common.save')
-          }}</mcp-button>
+        }}</mcp-button>
       </div>
     </template>
   </el-dialog>
@@ -160,6 +182,7 @@ const formModel = ref<{
   baseUrl?: string
   username?: string
   password?: string
+  cozeUserID?: string
 }>({
   accessID: '',
   accessName: '',
@@ -174,6 +197,7 @@ const formModel = ref<{
   baseUrl: '',
   username: '',
   password: '',
+  cozeUserID: '',
 })
 const platformList = ref([
   { type: AgentType.DIFY, icon: dify, name: t('agent.action.community') },
@@ -212,6 +236,10 @@ const rules: FormRules<typeof formModel.value> = {
   baseUrl: [{ required: true, message: t('agent.placeholder.baseUrl'), trigger: 'blur' }],
   username: [{ required: true, message: t('agent.placeholder.username'), trigger: 'blur' }],
   password: [{ required: true, message: t('agent.placeholder.password'), trigger: 'blur' }],
+  cozeUserID: [
+    { required: true, message: t('agent.placeholder.cozeUserID'), trigger: 'blur' },
+    { max: 32, message: t('agent.placeholder.accessNameLength'), trigger: 'blur' },
+  ],
 }
 
 // cancel dialog
@@ -309,6 +337,7 @@ const handleSaveCoze = async () => {
         accessType: formModel.value.accessType,
         enterpriseID: formModel.value.subType === CozeType.TEAM ? formModel.value.enterpriseID : '',
         subType: formModel.value.subType,
+        cozeUserID: formModel.value.cozeUserID || '',
       }
       await (formModel.value.accessID
         ? AgentAPI.update({
@@ -416,6 +445,7 @@ const init = (accessType: string, row: any) => {
       dbName: '',
       enterpriseID: '',
       subType: CozeType.PERSON,
+      cozeUserID: '',
     }
   }
 }

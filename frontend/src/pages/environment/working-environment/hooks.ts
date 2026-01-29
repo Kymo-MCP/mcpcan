@@ -39,17 +39,17 @@ export const useEnvTableHooks = () => {
         },
       },
     },
-    {
-      dataIndex: 'namespace',
-      label: t('env.run.namespace'),
-      searchConfig: {
-        component: 'el-input',
-        label: t('env.run.namespace'),
-        props: {
-          placeholder: t('env.run.namespace'),
-        },
-      },
-    },
+    // {
+    //   dataIndex: 'namespace',
+    //   label: t('env.run.namespace'),
+    //   searchConfig: {
+    //     component: 'el-input',
+    //     label: t('env.run.namespace'),
+    //     props: {
+    //       placeholder: t('env.run.namespace'),
+    //     },
+    //   },
+    // },
     { dataIndex: 'createdAt', label: t('env.run.createdAt') },
     { dataIndex: 'updatedAt', label: t('env.run.updatedAt') },
   ])

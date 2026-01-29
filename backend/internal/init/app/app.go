@@ -102,6 +102,17 @@ func (a *App) loadMysql() error {
 			repo := mysql.NewMcpTokenRepository()
 			return (&model.McpToken{}).TableName(), repo.InitTable()
 		},
+		func() (string, error) {
+			if a.config.RunMode == common.RunModeKymo {
+				model.SetIntelligentAccessTableName("intelligent_access")
+				mod := &model.IntelligentAccess{}
+				return mod.TableName(), nil
+			}
+			model.SetIntelligentAccessTableName("mcpcan_intelligent_access")
+			mod := &model.IntelligentAccess{}
+			repo := mysql.NewIntelligentAccessRepository()
+			return mod.TableName(), repo.InitTable()
+		},
 	}
 
 	// Sys tables - only load when NOT in kymo mode
@@ -192,6 +203,14 @@ func (a *App) initDataScope(ctx context.Context) error {
 	// 初始化代码包数据
 	if err := a.initCodePackage(ctx); err != nil {
 		return fmt.Errorf("failed to init code package data: %w", err)
+	}
+	// 初始化 OpenAPI 文档数据
+	if err := a.initOpenapi(ctx); err != nil {
+		return fmt.Errorf("failed to init openapi data: %w", err)
+	}
+	// 初始化智能访问数据
+	if err := a.initIntelligentAccess(ctx); err != nil {
+		return fmt.Errorf("failed to init intelligent access data: %w", err)
 	}
 	// 初始化 MCP 模板数据（使用嵌入式模板 JSON）
 	if err := a.initMcpTemplateData(ctx); err != nil {

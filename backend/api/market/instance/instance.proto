@@ -515,8 +515,6 @@ message TemplateCreateRequest {
   int32 startupTimeout = 7;
   // @inject_tag: json:"runningTimeout" form:"runningTimeout" desc:"Running timeout (seconds)"
   int32 runningTimeout = 8;
-  // @inject_tag: json:"environmentId" form:"environmentId" desc:"Environment ID"
-  int32 environmentId = 9;
   // @inject_tag: json:"packageId,omitempty" form:"packageId" desc:"Package ID, optional"
   string packageId = 10;
   // @inject_tag: json:"accessType" form:"accessType" desc:"Deployment mode"
@@ -573,8 +571,6 @@ message TemplateDetailResp {
   int32 startupTimeout = 8;
   // @inject_tag: json:"runningTimeout" form:"runningTimeout" desc:"Running timeout (seconds)"
   int32 runningTimeout = 9;
-  // @inject_tag: json:"environmentId" form:"environmentId" desc:"Environment ID"
-  int32 environmentId = 10;
   // @inject_tag: json:"packageId,omitempty" form:"packageId" desc:"Package ID, optional"
   string packageId = 11;
   // @inject_tag: json:"accessType" form:"accessType" desc:"Deployment mode"
@@ -595,8 +591,6 @@ message TemplateDetailResp {
   string createdAt = 21;
   // @inject_tag: json:"updatedAt" form:"updatedAt" desc:"Updated at"
   string updatedAt = 22;
-  // @inject_tag: json:"environmentName" form:"environmentName" desc:"Environment name"
-  string environmentName = 23;
   // @inject_tag: json:"servicePath" form:"servicePath" desc:"Service path"
   string servicePath = 24;
   // @inject_tag: json:"openapiBaseUrl" form:"openapiBaseUrl" desc:"OpenAPI base URL"
@@ -625,8 +619,6 @@ message TemplateEditRequest {
   int32 startupTimeout = 8;
   // @inject_tag: json:"runningTimeout" form:"runningTimeout" desc:"Running timeout (seconds)"
   int32 runningTimeout = 9;
-  // @inject_tag: json:"environmentId" form:"environmentId" desc:"Environment ID"
-  int32 environmentId = 10;
   // @inject_tag: json:"packageId,omitempty" form:"packageId" desc:"Package ID, optional"
   string packageId = 11;
   // @inject_tag: json:"accessType" form:"accessType" desc:"Deployment mode"

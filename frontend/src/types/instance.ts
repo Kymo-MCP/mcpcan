@@ -16,7 +16,7 @@ export enum AccessType {
 export enum McpProtocol {
   UNKONWN = 0, // Unkonwn
   SSE = 1, // SSE
-  STEAMABLE_HTTP = 2, // STEAMABLE_HTTP
+  STREAMABLE_HTTP = 2, // STREAMABLE_HTTP
   STDIO = 3, // STDIO
 }
 

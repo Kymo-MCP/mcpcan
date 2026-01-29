@@ -71,6 +71,11 @@ func (s *IntelligentAccessService) CreateHandler(c *gin.Context) {
 				common.GinError(c, i18nresp.CodeBadRequest, "invalid enterprise id")
 				return
 			}
+		} else if pb.SubType_value[req.SubType] == int32(pb.SubType_Person) {
+			if req.CozeUserID == "" {
+				common.GinError(c, i18nresp.CodeBadRequest, "invalid coze user id")
+				return
+			}
 		}
 	}
 	if req.AccessType == pb.IntelligentAccessType_N8N.String() {
@@ -93,6 +98,7 @@ func (s *IntelligentAccessService) CreateHandler(c *gin.Context) {
 		BaseUrl:      req.BaseUrl,
 		Username:     req.Username,
 		Password:     req.Password,
+		CozeUserID:   req.CozeUserID,
 	}
 
 	if err := mysql.IntelligentAccessRepo.Create(s.ctx, intelligentAccess); err != nil {
@@ -146,11 +152,19 @@ func (s *IntelligentAccessService) UpdateHandler(c *gin.Context) {
 				common.GinError(c, i18nresp.CodeBadRequest, "invalid enterprise id")
 				return
 			}
+
+			dbIntelligentAccess.EnterpriseID = req.EnterpriseID
+		} else if pb.SubType_value[req.SubType] == int32(pb.SubType_Person) {
+			if req.CozeUserID == "" {
+				common.GinError(c, i18nresp.CodeBadRequest, "invalid coze user id")
+				return
+			}
+
+			dbIntelligentAccess.CozeUserID = req.CozeUserID
 		}
 
 		dbIntelligentAccess.SubType = req.SubType
 		dbIntelligentAccess.AccessName = req.AccessName
-		dbIntelligentAccess.EnterpriseID = req.EnterpriseID
 	}
 	if dbIntelligentAccess.AccessType == pb.IntelligentAccessType_N8N.String() {
 		if req.BaseUrl == "" || req.Username == "" || req.Password == "" {
@@ -572,6 +586,14 @@ func GetCozeUserSpace(cookie string, access *model.IntelligentAccess) ([]*pb.Use
 		if space.SpaceRoleType != 2 && space.SpaceRoleType != 1 {
 			continue
 		}
+
+		// coze 个人版判定，如果是个人版，只能访问到自己的空间
+		if access.SubType == pb.SubType_Person.String() && access.CozeUserID != "" {
+			if space.OwnerUserID != access.CozeUserID {
+				return nil, fmt.Errorf("failed to get space list, coze user id not match: %s", space.OwnerUserID)
+			}
+		}
+
 		pbUserSpaces = append(pbUserSpaces, &pb.UserSpace{
 			UserID:           space.OwnerUserID,
 			TenantID:         space.ID,
@@ -635,5 +657,6 @@ func CoverDbAccessToPn(access *model.IntelligentAccess) *pb.IntelligentAccess {
 		BaseUrl:      access.BaseUrl,
 		Username:     access.Username,
 		Password:     access.Password,
+		CozeUserID:   access.CozeUserID,
 	}
 }

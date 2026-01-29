@@ -239,5 +239,13 @@
     "notes": "Custom Shell Script - SSE: Encapsulates logic via install.sh/start.sh. Path-aware.",
     "icon_path": "/static/images/mcp-sys-monitor.png",
     "service_path": "/sse"
+  },
+  {
+    "openapi_file_name": "mcpcan-openapi.json",
+    "name": "MCPCAN OpenAPI",
+    "openapi_base_url": "https://{{CURRENT_DOMAIN}}/api/market",
+    "mcp_protocol": "streamable-http",
+    "access_type": "hosting",
+    "notes": "MCPCAN OpenAPI template. The {{CURRENT_DOMAIN}} placeholder in openapi_base_url will be replaced with the current service domain during initialization. To invoke this template, set the server Authorization header with a Bearer token (for example: Bearer xxxxxxx, which can be obtained from the browser console of the current user in the MCPCAN system)."
   }
 ]

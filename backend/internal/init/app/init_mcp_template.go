@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"strings"
 
+	"github.com/kymo-mcp/mcpcan/pkg/common"
 	"github.com/kymo-mcp/mcpcan/pkg/database/model"
 	"github.com/kymo-mcp/mcpcan/pkg/database/repository/mysql"
+	"gorm.io/gorm"
 )
 
 //go:embed template.json
@@ -26,6 +29,27 @@ func GetEmbeddedTemplateJSON() []byte {
 	return data
 }
 
+type embeddedTemplateItem struct {
+	Name           string `json:"name"`
+	Port           int32  `json:"port"`
+	InitScript     string `json:"init_script"`
+	Command        string `json:"command"`
+	StartupTimeout int32  `json:"startup_timeout"`
+	RunningTimeout int32  `json:"running_timeout"`
+	PackageID      string `json:"package_id"`
+	PackageName    string `json:"package_name"`
+	SourceType     string `json:"source_type"`
+	AccessType     string `json:"access_type"`
+	McpProtocol    string `json:"mcp_protocol"`
+	McpServers     string `json:"mcp_servers,omitempty"`
+	ImgAddress     string `json:"img_address"`
+	Notes          string `json:"notes,omitempty"`
+	ServicePath    string `json:"service_path,omitempty"`
+	IconPath       string `json:"icon_path,omitempty"`
+	OpenapiFileName string `json:"openapi_file_name,omitempty"`
+	OpenapiBaseUrl  string `json:"openapi_base_url,omitempty"`
+}
+
 // initMcpTemplateData initializes data using embedded JSON templates
 func (a *App) initMcpTemplateData(ctx context.Context) error {
 	log.Printf("Starting MCP template data initialization...")
@@ -33,25 +57,6 @@ func (a *App) initMcpTemplateData(ctx context.Context) error {
 	embeddedTemplateJSON := GetEmbeddedTemplateJSON()
 	if len(embeddedTemplateJSON) == 0 {
 		return fmt.Errorf("embedded template json is empty")
-	}
-
-	// Define structure corresponding to embedded JSON
-	type embeddedTemplateItem struct {
-		Name           string `json:"name"`
-		Port           int32  `json:"port"`
-		InitScript     string `json:"init_script"`
-		Command        string `json:"command"`
-		StartupTimeout int32  `json:"startup_timeout"`
-		RunningTimeout int32  `json:"running_timeout"`
-		PackageID      string `json:"package_id"`
-		PackageName    string `json:"package_name"` // Package name field for querying existing packages
-		AccessType     string `json:"access_type"`
-		McpProtocol    string `json:"mcp_protocol"`
-		McpServers     string `json:"mcp_servers,omitempty"`
-		ImgAddress     string `json:"img_address"`
-		Notes          string `json:"notes,omitempty"`
-		ServicePath    string `json:"service_path,omitempty"`
-		IconPath       string `json:"icon_path,omitempty"`
 	}
 
 	var items []embeddedTemplateItem
@@ -77,41 +82,23 @@ func (a *App) initMcpTemplateData(ctx context.Context) error {
 			continue
 		}
 
-		// Determine environment ID based on environment field
-		var environmentID int32
-		var envSource string
+		log.Printf("Creating template '%s'", it.Name)
 
-		log.Printf("Creating template '%s' with %s", it.Name, envSource)
-
-		// Check if package_name exists and set PackageID accordingly
-		packageID := it.PackageID
-		if it.PackageName != "" {
-			// Query code package by original name
-			if codePackage, err := mysql.McpCodePackageRepo.FindByOriginalName(ctx, it.PackageName); err == nil {
-				// Package found, use its ID
-				packageID = codePackage.PackageID
-				log.Printf("Found existing package '%s' with ID: %s", it.PackageName, packageID)
-			} else {
-				// Package not found, keep original PackageID (could be empty)
-				log.Printf("Package '%s' not found, using original PackageID: %s", it.PackageName, packageID)
+		var tpl *model.McpTemplate
+		if it.OpenapiFileName != "" {
+			tpl, err = buildTemplateFromOpenapi(ctx, it)
+			if err != nil {
+				log.Printf("Failed to build openapi template '%s': %v, skipping", it.Name, err)
+				skippedCount++
+				continue
 			}
-		}
-
-		tpl := &model.McpTemplate{
-			Name:           it.Name,
-			Port:           it.Port,
-			InitScript:     it.InitScript,
-			Command:        it.Command,
-			StartupTimeout: it.StartupTimeout,
-			RunningTimeout: it.RunningTimeout,
-			EnvironmentID:  environmentID,
-			PackageID:      packageID,
-			AccessType:     convertAccessType(it.AccessType),
-			McpProtocol:    convertMcpProtocol(it.McpProtocol),
-			Notes:          it.Notes,
-			ServicePath:    it.ServicePath,
-			IconPath:       it.IconPath,
-			ImgAddress:     it.ImgAddress,
+		} else {
+			tpl, err = buildTemplateFromCodePackage(ctx, it)
+			if err != nil {
+				log.Printf("Failed to build code package template '%s': %v, skipping", it.Name, err)
+				skippedCount++
+				continue
+			}
 		}
 		if len(it.McpServers) > 0 {
 			// Parse JSON string and validate format
@@ -134,6 +121,122 @@ func (a *App) initMcpTemplateData(ctx context.Context) error {
 
 	log.Printf("MCP template data initialization completed. Created: %d, Skipped: %d", createdCount, skippedCount)
 	return nil
+}
+
+func buildTemplateFromCodePackage(ctx context.Context, it embeddedTemplateItem) (*model.McpTemplate, error) {
+	packageID, err := resolveCodePackageID(ctx, it.PackageName, it.PackageID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.McpTemplate{
+		Name:           it.Name,
+		Port:           it.Port,
+		InitScript:     it.InitScript,
+		Command:        it.Command,
+		StartupTimeout: it.StartupTimeout,
+		RunningTimeout: it.RunningTimeout,
+		PackageID:      packageID,
+		AccessType:     convertAccessType(it.AccessType),
+		McpProtocol:    convertMcpProtocol(it.McpProtocol),
+		Notes:          it.Notes,
+		ServicePath:    it.ServicePath,
+		IconPath:       it.IconPath,
+		ImgAddress:     it.ImgAddress,
+		SourceType:     convertSourceType(it.SourceType),
+	}, nil
+}
+
+func buildTemplateFromOpenapi(ctx context.Context, it embeddedTemplateItem) (*model.McpTemplate, error) {
+	openapiPackageID, err := resolveOpenapiPackageID(ctx, it.OpenapiFileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.McpTemplate{
+		Name:           it.Name,
+		Port:           it.Port,
+		InitScript:     it.InitScript,
+		Command:        it.Command,
+		PackageID:      openapiPackageID,
+		AccessType:     convertAccessType(it.AccessType),
+		McpProtocol:    convertMcpProtocol(it.McpProtocol),
+		Notes:          it.Notes,
+		OpenapiBaseUrl: replaceCurrentDomainPlaceholder(it.OpenapiBaseUrl),
+		SourceType:     model.SourceTypeOpenapi,
+	}, nil
+}
+
+func findOpenapiFileIDByName(ctx context.Context, originalName string) (string, error) {
+	var pkg model.McpOpenapiPackage
+	err := mysql.GetDB().Model(&model.McpOpenapiPackage{}).
+		WithContext(ctx).
+		Where("original_name = ? AND is_deleted = false AND base_openapi_file_id = ''", originalName).
+		First(&pkg).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return "", fmt.Errorf("openapi file not found: %s", originalName)
+		}
+		return "", fmt.Errorf("failed to query openapi file: %w", err)
+	}
+	return pkg.OpenapiFileID, nil
+}
+
+func resolveOpenapiPackageID(ctx context.Context, openapiFileName string) (string, error) {
+	openapiFileID, err := findOpenapiFileIDByName(ctx, openapiFileName)
+	if err != nil {
+		return "", err
+	}
+	log.Printf("Found openapi file '%s' with ID: %s", openapiFileName, openapiFileID)
+	return openapiFileID, nil
+}
+
+func resolveCodePackageID(ctx context.Context, packageName string, fallbackID string) (string, error) {
+	if packageName == "" {
+		return fallbackID, nil
+	}
+
+	codePackage, err := mysql.McpCodePackageRepo.FindByOriginalName(ctx, packageName)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			log.Printf("Package '%s' not found, using original PackageID: %s", packageName, fallbackID)
+			return fallbackID, nil
+		}
+		return "", fmt.Errorf("failed to query code package '%s': %w", packageName, err)
+	}
+
+	log.Printf("Found existing package '%s' with ID: %s", packageName, codePackage.PackageID)
+	return codePackage.PackageID, nil
+}
+
+func replaceCurrentDomainPlaceholder(rawURL string) string {
+	if rawURL == "" {
+		return rawURL
+	}
+	if !strings.Contains(rawURL, "{{CURRENT_DOMAIN}}") {
+		return rawURL
+	}
+
+	domain := os.Getenv("CURRENT_DOMAIN")
+	if domain == "" {
+		if ip, err := common.GetPublicIP(); err == nil && ip != "" {
+			domain = ip
+		}
+	}
+	if domain == "" {
+		log.Printf("CURRENT_DOMAIN is not set and public IP not found, keep placeholder in URL: %s", rawURL)
+		return rawURL
+	}
+
+	domain = strings.TrimSpace(domain)
+	if strings.HasPrefix(domain, "http://") {
+		domain = strings.TrimPrefix(domain, "http://")
+	} else if strings.HasPrefix(domain, "https://") {
+		domain = strings.TrimPrefix(domain, "https://")
+	}
+	domain = strings.TrimRight(domain, "/")
+
+	return strings.ReplaceAll(rawURL, "{{CURRENT_DOMAIN}}", domain)
 }
 
 // validateMcpServersConfig validates the JSON format of McpServers configuration
@@ -267,5 +370,20 @@ func convertMcpProtocol(s string) model.McpProtocol {
 		return model.McpProtocolStdio
 	default:
 		return model.McpProtocolSSE
+	}
+}
+
+func convertSourceType(s string) model.SourceType {
+	switch s {
+	case string(model.SourceTypeMarket):
+		return model.SourceTypeMarket
+	case string(model.SourceTypeTemplate):
+		return model.SourceTypeTemplate
+	case string(model.SourceTypeCustom):
+		return model.SourceTypeCustom
+	case string(model.SourceTypeOpenapi):
+		return model.SourceTypeOpenapi
+	default:
+		return model.SourceTypeCustom
 	}
 }

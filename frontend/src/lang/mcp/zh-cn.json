@@ -18,8 +18,8 @@
       "pageDesc": {
         "createTitle": "创建 MCP Server 模板",
         "editTitle": "编辑 MCP Server 模板",
-        "list": "MCP模板列表",
-        "desc": "管理你的模板列表以及提供再可快速部署MCP服务实例",
+        "list": "MCP部署模板",
+        "desc": "管理你的部署模板以及提供再可快速部署MCP服务实例",
         "total": "模板总数",
         "compress": "代码包已默认加压到"
       },
@@ -89,6 +89,7 @@
         "asTemplate": "另存为模板",
         "view": "查看",
         "log": "容器日志",
+        "logs": " 日志",
         "accessLogs": "访问日志",
         "debugTool": "调试工具",
         "stop": "停止",
@@ -103,11 +104,15 @@
         "stopInstance": "实例已停止",
         "copy": "复制配置",
         "selectTempalte": "选择模板",
-        "customize": "自定义",
+        "customize": "快速开始",
         "byTemplate": "从模板创建",
         "byDocs": "导入OpenAPI",
         "deleteToken": "确定删除该令牌？删除有效令牌后，使用该令牌的请求将无法通过验证。",
-        "random": "确定重新生产令牌？重新生成令牌后，使用该令牌的请求将无法通过验证。"
+        "random": "确定重新生产令牌？重新生成令牌后，使用该令牌的请求将无法通过验证。",
+        "accessConfig": "访问配置",
+        "viewLogs": "查看日志",
+        "saveAndRun": "保存并运行",
+        "backList": "返回列表"
       },
       "pageDesc": {
         "createTitle": "创建实例",
@@ -118,7 +123,8 @@
         "confirmEdit": "实例编辑之后将重启；确定编辑？",
         "packStatusTips": "状态有延时，通过状态探测或者查看日志排查容器运行情况。",
         "noToken": "无需认证",
-        "apiSelectTitle": "选择 OpenAPI 文档"
+        "apiSelectTitle": "选择 OpenAPI 文档",
+        "downloadCode": "下载示例代码包"
       },
       "tableHeadDesc": {
         "token": "启用令牌认证后，将开启令牌验证，访问MCP服务需要携带令牌Token"
@@ -132,7 +138,7 @@
         "instanceName": "实例名称",
         "deployType": "部署模式",
         "imgAddress": "镜像地址",
-        "mcpServers": "MCP服务器配置",
+        "mcpServers": "MCPServers配置",
         "mcpServersPlaceholder": "请输入JSON格式的MCP服务器配置，例如:",
         "configInfo": "配置信息",
         "packageId": "代码包选择",
@@ -152,7 +158,7 @@
         "readOnly": "只读",
         "pvcName": "PVC",
         "addVolume": "添加卷挂载",
-        "initScript": "初始化脚本",
+        "initScript": "依赖命令",
         "command": "启动命令",
         "addToken": " 添加令牌",
         "batchChangeHeader": "批量修改",
@@ -258,6 +264,52 @@
         "errorInfo": "错误信息",
         "warnInfo": "告警信息",
         "unit": "条告警"
+      },
+      "card": {
+        "configUrl": "链接配置",
+        "containerControl": "容器启停",
+        "start": "启用",
+        "stop": "禁用"
+      },
+      "hostingForm": {
+        "codeExample": "代码示例",
+        "commandExample": "运行环境命令示例",
+        "dependenceExample": "依赖命令示例",
+        "startExample": "启动命令示例",
+        "commandTips": "注意：点击使用后会覆盖命令，无法恢复",
+        "startTips": "启动容器说明",
+        "accessUrl": "访问地址",
+        "listenUrl": "容器监听地址",
+        "listenUrlTips1": "默认绑定：0.0.0.0地址，网关会自动识别容器SVC地址，并将流量导入容器中。当前运行模式无需修改此参数。",
+        "listenPort": "容器监听端口",
+        "listenPortTips1": "默认8080，网关会自动识别容器并将流量导入容器中，当前运行模式无需修改此参数。",
+        "listenPortTips2": "请输入 MCP服务真实监听端口号",
+        "listenPath": "容器监听路径",
+        "listenPathTips1": "启动命令会将 STDIO 协议转为 SSE协议，MCP服务挂载路径/sse，网关会自动识别路径并将流量导入。当前运行模式无需修改此参数。",
+        "listenPathTips2": "请输入MCP服务挂载的访问路径，留空则无前缀路径。可参考部署模板中示例数据。",
+        "listenPathTips3": " 启动命令会将 STDIO 协议转为STREAMABLEHTTP协议，MCP 服务挂载路径/mcp，网关会自动识别路径并将流量导入。当前运行模式无需修改此参数。",
+        "envTips": "容器环境变量配置",
+        "envNotes": "注意:环境变量配置是指容器的环境变量配置，同时也会通过托管命令带入到MCP服务中",
+        "volume": "卷挂载",
+        "volumeTips": "容器卷挂载配置",
+        "headerTitle": "Header 透传配置",
+        "directTips": "MCP服务 SSE / STEAMABLE HTTP 协议配置当前为直连模式，主要是填写外部 MCP访问配置，平台仅承担「配置注册中心」角色。如果需要代理业务流量或者参与健康探测与运行监控请切换为代理模式。"
+      },
+      "accessType": {
+        "title": "快速开始",
+        "hosting": "托管模式",
+        "direct": "直连模式",
+        "proxy": "代理模式",
+        "api": "API文档导入",
+        "supportApi": "仅支持标准的OpenAPI文档",
+        "hostingDesc": "托管模式让平台利用自身容器能力运行MCP服务，通过内置网关和适配器解决流量代理、监控及协议兼容问题",
+        "proxyDesc": "代理模式将平台作为MCP服务的统一访问网关，通过平台代理地址交互。平台在转发请求时提供安全防护与审计，实现后端屏蔽、统一入口。",
+        "directDesc": "直连模式是最轻量级接入方式，平台仅作配置注册中心，不代理业务流量，不参与健康探测与监控。客户端直连外部MCP服务。",
+        "openAPIDesc": "将标准OpenAPI文档自动转为MCP服务。平台解析文档并生成适配器，使传统HTTP接口可通过MCP协议流式访问，创建后的MCP服务将以STREAMABLE_HTTP协议访问。",
+        "protocolType": "支持协议类型",
+        "SSE": "SSE协议",
+        "STREAMABLE_HTTP": "Streamable HTTP协议",
+        "STDIO": "STDIO 标准输入输出协议（创建后由适配器自动转换为 SSE/Streamable HTTP 协议）"
       }
     },
     "type": {

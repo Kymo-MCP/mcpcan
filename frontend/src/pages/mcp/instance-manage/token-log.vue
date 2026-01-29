@@ -30,7 +30,7 @@
         </div>
         <div class="col-span-6 flex items-center">
           <span class="color-gray font-size-3">
-            {{ t('mcp.instance.log.timeTips') }}。{{ last24hText }}
+            {{ t('mcp.instance.log.timeTips') }}. {{ last24hText }}
           </span>
           <!-- <el-popover placement="top" width="300">
               <div>{{ t('mcp.instance.log.timeTips') }}</div>

@@ -9,40 +9,43 @@
     <template #header>
       <div class="center">{{ props.title }}</div>
     </template>
-    <el-scrollbar ref="scrollbarRef" max-height="75vh" class="pr-2">
-      <div class="mr-2 ml-2 mb-4 mt-1 flex align-center w-full">
-        <el-input
-          v-model="searchKeyword"
-          :suffix-icon="Search"
-          :placeholder="t('desc.placeholderKey')"
-          class="flex-sub mr-4"
-        ></el-input>
-        <slot name="action"></slot>
-      </div>
+    <div v-loading="props.loading">
+      <el-scrollbar ref="scrollbarRef" max-height="75vh" class="pr-2">
+        <div class="mb-4 mt-1 flex align-center w-full pl-2">
+          <el-input
+            v-model="searchKeyword"
+            :suffix-icon="Search"
+            :placeholder="t('desc.placeholderKey')"
+            class="flex-sub mr-4"
+          ></el-input>
+          <slot name="action"></slot>
+        </div>
 
-      <el-radio-group v-model="currentSelected" class="mr-2 ml-2">
-        <el-radio
-          v-for="(option, index) in _options"
-          :key="index"
-          :value="option.id"
-          size="large"
-          class="w-full radio-item"
-        >
-          <slot name="options" :option="option">
-            <div class="flex justify-between">
-              <div class="flex align-center">
-                <el-image :src="zipLogo" style="width: 32px; height: 32px"></el-image>
-                <span class="ml-2"> {{ option.name }}</span>
+        <el-radio-group v-model="currentSelected" class="mr-2 ml-2" v-if="_options.length">
+          <el-radio
+            v-for="(option, index) in _options"
+            :key="index"
+            :value="option.id"
+            size="large"
+            class="w-full radio-item"
+          >
+            <slot name="options" :option="option">
+              <div class="flex justify-between">
+                <div class="flex align-center">
+                  <el-image :src="zipLogo" style="width: 32px; height: 32px"></el-image>
+                  <span class="ml-2"> {{ option.name }}</span>
+                </div>
+                <div class="flex align-center">
+                  {{ t('mcp.template.formData.size') }}：{{ formatFileSize(option.size) }}
+                  <span>{{ timestampToDate(option.createdAt) }}</span>
+                </div>
               </div>
-              <div class="flex align-center">
-                {{ t('mcp.template.formData.size') }}：{{ formatFileSize(option.size) }}
-                <span>{{ timestampToDate(option.createdAt) }}</span>
-              </div>
-            </div>
-          </slot>
-        </el-radio>
-      </el-radio-group>
-    </el-scrollbar>
+            </slot>
+          </el-radio>
+        </el-radio-group>
+        <el-empty v-else></el-empty>
+      </el-scrollbar>
+    </div>
     <template #footer>
       <div class="center">
         <el-button @click="handleCancel" class="mr-4">{{ t('common.cancel') }}</el-button>
@@ -94,6 +97,10 @@ const props = defineProps({
   options: {
     type: Array<any>,
     default: [],
+  },
+  loading: {
+    type: Boolean,
+    default: false,
   },
 })
 

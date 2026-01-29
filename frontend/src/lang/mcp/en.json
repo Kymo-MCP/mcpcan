@@ -26,7 +26,7 @@
       "formData": {
         "title": "Add a new Template",
         "name": "Name",
-        "notes": "Desc",
+        "notes": "Description",
         "isBind": "Bound",
         "size": "Size",
         "path": "Path",
@@ -89,13 +89,14 @@
         "asTemplate": "As Template",
         "view": "View",
         "log": "Container Logs",
+        "logs": "Logs",
         "accessLogs": "Access Logs",
-        "debugTool": "Debug Tool",
+        "debugTool": "Debug",
         "stop": "Stop",
         "start": "Start",
         "reStart": "Restart",
         "token": "Token",
-        "probe": "Probe Status",
+        "probe": "Probe",
         "delete": "Delete",
         "deleteBox": "Are you sure to delete this instance?",
         "detection": "Detection successful; Service is connected normally",
@@ -103,11 +104,15 @@
         "stopInstance": "Instance stopped",
         "copy": "Copy Config",
         "selectTempalte": "Select a Tempalte",
-        "customize": "Customize",
+        "customize": "Quick Start",
         "byTemplate": "By Template",
         "byDocs": "By OpenAPI",
         "deleteToken": "Are you sure to delete this token? After deleting a valid token, requests using that token will not pass verification.",
-        "random": "Are you sure to reproduce the token? After regenerating the token, requests using the token will not pass verification."
+        "random": "Are you sure to reproduce the token? After regenerating the token, requests using the token will not pass verification.",
+        "accessConfig": "Configuration",
+        "viewLogs": "Logs",
+        "saveAndRun": "Save and Run",
+        "backList": "List"
       },
       "pageDesc": {
         "createTitle": "Create a instance",
@@ -118,7 +123,8 @@
         "confirmEdit": "After editing the instance, it will restart; Are you sure about editing?",
         "packStatusTips": "There is a delay in the status, and container operation can be checked through status detection or log viewing.",
         "noToken": "Not certified",
-        "apiSelectTitle": "Select OpenAPI Document"
+        "apiSelectTitle": "Select OpenAPI Document",
+        "downloadCode": "Download Example Code Package"
       },
       "tableHeadDesc": {
         "token": "After enabling token authentication, token verification will be activated, and accessing MCP services requires carrying the token Token"
@@ -132,7 +138,7 @@
         "instanceName": "InstanceName",
         "deployType": "DeployType",
         "imgAddress": "ImgAddress",
-        "mcpServers": "mcpServersConfig",
+        "mcpServers": "MCPServersConfig",
         "mcpServersPlaceholder": "Please enter the MCP server configuration in JSON format,Example:",
         "configInfo": "ConfigInfo",
         "packageId": "CodePackage",
@@ -235,7 +241,7 @@
       "openApi": {
         "importTitle": "Import OpenAPI Document",
         "serviceUrl": "Service Url",
-        "tips": "Note: MCP services imported through the OpenAPI document will be accessed via the STEAMABLE_HTTP protocol",
+        "tips": "Note: MCP services imported through the OpenAPI document will be accessed via the STREAMABLE_HTTP protocol",
         "support": "Supports importing JSON or YAML files in OpenAPI 3.0.0 or higher version data format.",
         "localFile": "Local Upload",
         "selectDocs": "Select from Document Library",
@@ -258,6 +264,52 @@
         "errorInfo": "Error Info",
         "warnInfo": "Warn Info",
         "unit": "Warns"
+      },
+      "card": {
+        "configUrl": "Config",
+        "containerControl": "Container Control",
+        "start": "Open",
+        "stop": "Close"
+      },
+      "hostingForm": {
+        "codeExample": "Example",
+        "commandExample": "Command Example",
+        "dependenceExample": "Dependence Example",
+        "startExample": "Start Command Example",
+        "commandTips": "Note: After clicking use, the command will be overwritten and cannot be restored",
+        "startTips": "Startup Command Description",
+        "accessUrl": "Access IP",
+        "listenUrl": "Container Listen URL",
+        "listenUrlTips1": "Default binding: 0.0.0.0 address, the gateway will automatically identify the container SVC address and route traffic into the container. No need to modify this parameter in the current running mode.",
+        "listenPort": "Container Listen Port",
+        "listenPortTips1": "Default 8080, the gateway will automatically identify the container and route traffic into the container. No need to modify this parameter in the current running mode.",
+        "listenPortTips2": "Please enter the real listening port number of the MCP service",
+        "listenPath": "Container Listen Path",
+        "listenPathTips1": "The startup command will convert the STDIO protocol to the SSE protocol, and the MCP service mount path is /sse. The gateway will automatically identify the path and route the traffic in. No need to modify this parameter in the current running mode.",
+        "listenPathTips2": "Please enter the access path mounted by the MCP service. Leave it blank for no prefix path. You can refer to the example data in the deployment template.",
+        "listenPathTips3": "The startup command will convert the STDIO protocol to the STREAMABLEHTTP protocol, and the MCP service mount path is /mcp. The gateway will automatically identify the path and route the traffic in. No need to modify this parameter in the current running mode.",
+        "envTips": "Container Environment Variable Configuration",
+        "envNotes": "Note: Environment variable configuration refers to the container's environment variable configuration, and will also be brought into the MCP service through the hosting command.",
+        "volume": "Volume Mount",
+        "volumeTips": "Container Volume Mount Configuration",
+        "headerTitle": "Header Passthrough Configuration",
+        "directTips": "The current configuration of MCP service SSE / STREAMABLE HTTP protocol is in direct connection mode, mainly filling in the external MCP access configuration. The platform only plays the role of 'configuration registration center'. If you need to proxy business traffic or participate in health checks and operation monitoring, please switch to proxy mode."
+      },
+      "accessType": {
+        "title": "Quick Start",
+        "hosting": "Hosting",
+        "direct": "Direct",
+        "proxy": "Proxy",
+        "api": "OPEN API",
+        "supportApi": "Standard OpenAPI doc",
+        "hostingDesc": "Hosting mode allows the platform to utilize its container capabilities to run MCP services, solving traffic proxying, monitoring, and protocol compatibility issues through built-in gateways and adapters.",
+        "proxyDesc": "Proxy mode takes the platform as a unified access gateway for MCP services, interacting through the proxy address. The platform provides security protection and auditing when forwarding requests, achieving backend shielding and a unified entrance.",
+        "directDesc": "Direct mode is the lightest access method, with the platform only serving as a configuration registration center, not proxying business traffic or participating in health checks and monitoring. Clients connect directly to external MCP services.",
+        "openAPIDesc": "Automatically convert standard OpenAPI documents into MCP services. The platform parses the documents and generates adapters, allowing traditional HTTP interfaces to be accessed through MCP protocols, creating MCP services that can be accessed via the STREAMABLE_HTTP protocol.",
+        "protocolType": "Supported Protocol Types",
+        "SSE": "SSE Protocol",
+        "STREAMABLE_HTTP": "Streamable HTTP Protocol",
+        "STDIO": "STDIO Standard Input/Output Protocol (automatically converted to SSE/Streamable HTTP protocol after creation)"
       }
     },
     "type": {

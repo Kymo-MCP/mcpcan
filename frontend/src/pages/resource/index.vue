@@ -38,7 +38,7 @@ const activeName = ref('first')
 <style lang="scss" scoped>
 .custom-tabs {
   :deep(.el-tabs__header) {
-    margin-bottom: 24px;
+    // margin-bottom: 24px;
     border-bottom: none;
   }
 

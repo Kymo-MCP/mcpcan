@@ -54,9 +54,9 @@ export const TemplateAPI = {
 // 列表请求
 export interface TableData {
   /** 页码 */
-  page: string
+  page: number
   /** 每页显示数量 */
-  pageSize: string
+  pageSize: number
   /** 允许传入其他任意类型的参数 */
   [key: string]: any
 }

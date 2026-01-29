@@ -20,7 +20,8 @@
         :columns="columns"
         :handlerColumnConfig="{
           fixed: 'right',
-          width: '120px',
+          width: '260px',
+          align: 'center',
         }"
         v-model:pageConfig="pageConfig"
       >
@@ -46,8 +47,37 @@
             >
               {{ t('env.run.action.detail') }}
             </el-button>
+            <el-button
+              type="primary"
+              size="small"
+              link
+              class="base-btn-link"
+              @click="handleConnection(row)"
+            >
+              {{ t('env.run.action.connection') }}
+            </el-button>
+            <el-button
+              v-if="row.environment === 'kubernetes'"
+              type="primary"
+              size="small"
+              link
+              class="base-btn-link"
+              @click="handleJumpToPvc(row)"
+            >
+              {{ t('env.run.action.pvc') }}
+            </el-button>
+            <el-button
+              v-if="row.environment === 'kubernetes'"
+              type="primary"
+              size="small"
+              link
+              class="base-btn-link"
+              @click="handleJumpToNode(row)"
+            >
+              {{ t('env.run.action.node') }}
+            </el-button>
 
-            <el-dropdown
+            <!-- <el-dropdown
               trigger="click"
               class="ml-4"
               @click.stop
@@ -84,7 +114,7 @@
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
-            </el-dropdown>
+            </el-dropdown> -->
           </div>
         </template>
       </TablePlus>

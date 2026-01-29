@@ -86,7 +86,9 @@
     "back": "Back",
     "on": "ON",
     "off": "OFF",
-    "more": "More"
+    "more": "More",
+    "select": "Select",
+    "use": "Use"
   },
   "status": {
     "active": "Active",

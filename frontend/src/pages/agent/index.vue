@@ -27,7 +27,7 @@
                 height="20"
                 borderRadius="4"
                 style="background-color: #fff; margin-right: 10px"
-              />Coze{{ t('agent.action.enterprise') }}
+              />{{ t('agent.action.enterprise') }}
             </el-dropdown-item>
             <el-dropdown-item command="business" @click="handleNewAgent(AgentType.N8N)">
               <McpImage :src="n8n" fit="contain" width="20" height="20" />
@@ -45,11 +45,14 @@
         :requestConfig="requestConfig"
         :columns="columns"
         show-view-mode
-        default-view-mode="card"
+        view-mode="card"
+        :showPage="false"
         v-model:pageConfig="pageConfig"
+        :gridConfig="{ xs: 24, sm: 12, md: 12, lg: 8, xl: 6 }"
         :handlerColumnConfig="{
-          width: '120px',
+          width: '180px',
           fixed: 'right',
+          align: 'center',
         }"
       >
         <template #action>
@@ -61,91 +64,101 @@
             <div id="agentSearch"></div>
           </div>
         </template>
-        <template #name="{ row }">
+        <template #accessName="{ row }">
           <div class="flex align-center">
             <el-tooltip effect="dark" placement="top" class="flex-sub" :raw-content="true">
-              <div class="flex-sub ml-2 ellipsis-two">{{ (row as any).name }}</div>
+              <div class="flex-sub ml-2 ellipsis-two">{{ (row as any).accessName }}</div>
               <template #content>
                 <div style="width: 300px">
-                  {{ (row as any).name }}
+                  {{ (row as any).accessName }}
                 </div>
               </template>
             </el-tooltip>
           </div>
         </template>
         <template #operation="{ row }">
-          <div class="flex align-center">
+          <div class="flex align-center justify-center">
+            <el-button type="text" size="small" link class="base-btn-link" @click="handleEdit(row)">
+              {{ t('common.edit') }}
+            </el-button>
             <el-button
               type="text"
               size="small"
               link
               class="base-btn-link"
-              @click="handleEdit(row)"
-              >{{ t('common.edit') }}</el-button
+              v-if="row.accessType !== AgentType.COZE"
+              @click="handleConnection(row)"
             >
-            <el-dropdown trigger="click" class="ml-4" @click.stop :show-arrow="false">
-              <el-icon class="link-hover cursor-pointer"><More /></el-icon>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
-                    v-if="row.accessType !== AgentType.COZE"
-                    @click="handleConnection(row)"
-                  >
-                    {{ t('common.connection') }}
-                  </el-dropdown-item>
-                  <el-dropdown-item @click="handleDelete(row)">
-                    <el-button type="danger" size="small" link>{{ t('common.delete') }}</el-button>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+              {{ t('common.connection') }}
+            </el-button>
+            <el-button type="danger" size="small" link @click="handleDelete(row)">
+              {{ t('common.delete') }}
+            </el-button>
           </div>
         </template>
         <template #slotCard="{ row }: { row: any }">
           <el-card>
             <template #header>
               <div class="flex align-center justify-between">
-                <span>{{ row.accessName }}</span>
-
-                <el-dropdown trigger="click" class="ml-4" @click.stop :show-arrow="false">
-                  <el-icon class="link-hover cursor-pointer"><More /></el-icon>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item @click="handleEdit(row)">
-                        {{ t('common.edit') }}
-                      </el-dropdown-item>
-                      <el-dropdown-item
-                        v-if="row.accessType !== AgentType.COZE"
-                        @click="handleConnection(row)"
-                      >
-                        {{ t('common.connection') }}
-                      </el-dropdown-item>
-                      <el-dropdown-item @click="handleDelete(row)">
-                        <el-button type="danger" size="small" link>{{
-                          t('common.delete')
-                        }}</el-button>
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
+                <div class="flex-sub u-line-1 font-bold text-[16px] cursor-pointer">
+                  <el-tooltip :content="row.accessName" placement="top" trigger="click">
+                    {{ row.accessName }}
+                  </el-tooltip>
+                </div>
               </div>
             </template>
-            <div class="center">
-              <McpImage
-                :src="logoIcon[row.accessType] || dify"
-                fit="contain"
-                width="50"
-                height="20"
-              />
-              <div v-if="row.accessType === AgentType.N8N" class="flex-sub ml-2 ellipsis-two">
-                {{ AgentType.N8N }}
+            <div class="flex justify-between items-center">
+              <div class="center">
+                <McpImage
+                  :src="logoIcon[row.accessType] || dify"
+                  fit="contain"
+                  width="50"
+                  height="20"
+                />
+                <div v-if="row.accessType === AgentType.N8N" class="flex-sub ml-2 ellipsis-two">
+                  {{ AgentType.N8N }}
+                </div>
+                <div v-else class="flex-sub ml-2 ellipsis-two">
+                  {{
+                    row.accessType === AgentType.DIFY
+                      ? t('agent.action.community')
+                      : t('agent.action.enterprise')
+                  }}
+                </div>
               </div>
-              <div v-else class="flex-sub ml-2 ellipsis-two">
-                {{
-                  row.accessType === AgentType.DIFY
-                    ? t('agent.action.community')
-                    : t('agent.action.enterprise')
-                }}
+              <div>
+                <el-tooltip :content="t('common.edit')" placement="top">
+                  <el-icon
+                    :size="16"
+                    class="mx-2 cursor-pointer link-hover"
+                    @click="handleEdit(row)"
+                  >
+                    <Edit />
+                  </el-icon>
+                </el-tooltip>
+                <el-tooltip
+                  v-if="row.accessType !== AgentType.COZE"
+                  :content="t('common.connection')"
+                  placement="top"
+                >
+                  <el-icon
+                    :size="16"
+                    class="mx-2 cursor-pointer link-hover"
+                    @click="handleConnection(row)"
+                  >
+                    <Link />
+                  </el-icon>
+                </el-tooltip>
+                <el-tooltip :content="t('common.delete')" placement="top">
+                  <el-icon
+                    :size="16"
+                    class="mx-2 cursor-pointer link-hover"
+                    @click="handleDelete(row)"
+                    color="#F56C6C"
+                  >
+                    <Delete />
+                  </el-icon>
+                </el-tooltip>
               </div>
             </div>
           </el-card>
@@ -158,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { Plus, More } from '@element-plus/icons-vue'
+import { Plus, More, Edit, Delete, Link } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import TablePlus from '@/components/TablePlus/index.vue'
 import McpButton from '@/components/mcp-button/index.vue'

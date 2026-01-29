@@ -34,8 +34,8 @@ func (r *McpTemplateRepository) Create(ctx context.Context, template *model.McpT
 	err := r.getDB().WithContext(ctx).Create(template).Error
 	if err != nil {
 		// 记录更详细的错误信息，包含模板数据
-		return fmt.Errorf("failed to create template [name=%s, mcp_server_id=%v, environment_id=%v]: %v",
-			template.Name, template.McpServerID, template.EnvironmentID, err)
+		return fmt.Errorf("failed to create template [name=%s, mcp_server_id=%v]: %v",
+			template.Name, template.McpServerID, err)
 	}
 
 	return nil
@@ -114,16 +114,6 @@ func (r *McpTemplateRepository) FindBySourceType(ctx context.Context, sourceType
 	return templates, nil
 }
 
-// FindByEnvironmentID 根据环境ID查找模板
-func (r *McpTemplateRepository) FindByEnvironmentID(ctx context.Context, environmentID uint) ([]*model.McpTemplate, error) {
-	var templates []*model.McpTemplate
-	err := r.getDB().WithContext(ctx).Where("environment_id = ?", environmentID).Find(&templates).Error
-	if err != nil {
-		return nil, err
-	}
-	return templates, nil
-}
-
 // FindByPackageID finds templates by package ID
 func (r *McpTemplateRepository) FindByPackageID(ctx context.Context, packageID string) ([]*model.McpTemplate, error) {
 	var templates []*model.McpTemplate
@@ -145,10 +135,6 @@ func (r *McpTemplateRepository) FindWithPagination(ctx context.Context, page, pa
 	// 应用筛选条件
 	for key, value := range filters {
 		switch key {
-		case "environment_id", "environmentId":
-			if envId, ok := value.(uint); ok && envId > 0 {
-				query = query.Where("environment_id = ?", envId)
-			}
 		case "template_id", "templateId":
 			if templateId, ok := value.(int32); ok && templateId > 0 {
 				query = query.Where("id = ?", templateId)
@@ -221,17 +207,6 @@ func (r *McpTemplateRepository) InitTable() error {
 	if count == 0 {
 		// 创建索引
 		sql2 := fmt.Sprintf("CREATE INDEX idx_mcp_template_mcp_server_id ON %v(mcp_server_id)", (&model.McpTemplate{}).TableName())
-		if err := r.getDB().Exec(sql2).Error; err != nil {
-			return fmt.Errorf("failed to create index: %v", err)
-		}
-	}
-
-	// 检查环境ID索引是否存在
-	sql = fmt.Sprintf("SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = '%v' AND index_name = 'idx_mcp_template_environment_id'", (&model.McpTemplate{}).TableName())
-	r.getDB().Raw(sql).Count(&count)
-	if count == 0 {
-		// 创建索引
-		sql2 := fmt.Sprintf("CREATE INDEX idx_mcp_template_environment_id ON %v(environment_id)", (&model.McpTemplate{}).TableName())
 		if err := r.getDB().Exec(sql2).Error; err != nil {
 			return fmt.Errorf("failed to create index: %v", err)
 		}

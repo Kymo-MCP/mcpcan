@@ -39,6 +39,8 @@ message IntelligentAccess {
     string baseUrl = 13;
     string username = 14;
     string password = 15;
+
+    string cozeUserID = 16;
 }
 
 message CreateRequest {
@@ -56,6 +58,8 @@ message CreateRequest {
     string baseUrl = 13;
     string username = 14;
     string password = 15;
+
+    string cozeUserID = 16;
 }
 
 message CreateResponse {
@@ -77,6 +81,8 @@ message UpdateRequest {
     string baseUrl = 11;
     string username = 12;
     string password = 13;
+
+    string cozeUserID = 14;
 }
 
 message UpdateResponse {

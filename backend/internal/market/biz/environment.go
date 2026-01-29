@@ -46,15 +46,6 @@ func (biz *EnvironmentBiz) UpdateEnvironment(ctx context.Context, environment *m
 
 // DeleteEnvironment delete environment
 func (biz *EnvironmentBiz) DeleteEnvironment(ctx context.Context, id uint) error {
-	// Check if there are templates associated with this environment
-	templates, err := GTemplateBiz.GetTemplatesByEnvironmentID(ctx, id)
-	if err != nil {
-		return fmt.Errorf("failed to check templates: %w", err)
-	}
-	if len(templates) > 0 {
-		return fmt.Errorf("cannot delete environment: %d templates are still associated with this environment", len(templates))
-	}
-
 	// Check if there are instances associated with this environment
 	instances, err := GInstanceBiz.GetInstancesByEnvironmentID(ctx, id)
 	if err != nil {

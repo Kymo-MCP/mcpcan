@@ -29,5 +29,7 @@ storage:
   rootPath: ./data
   # 代码包存放路径
   codePath: ./data/code-package
+  # OpenAPI 文档存放路径
+  openapiPath: ./data/mcpcan/openapi-file
   # static 存放路径
   staticPath: ./data/static

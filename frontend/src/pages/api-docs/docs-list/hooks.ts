@@ -1,10 +1,20 @@
 import { DocsAPI } from '@/api/api-docs/index'
 import type { Code } from '@/types'
 import { timestampToDate, formatFileSize } from '@/utils/system'
+import baseConfig from '@/config/base_config.ts'
+import { Storage } from '@/utils/storage'
 
 export const useDocsTableHooks = () => {
   const { t } = useI18n()
   const tablePlus = ref()
+  const action = ref(
+    baseConfig.SERVER_BASE_URL +
+      (window as any).__APP_CONFIG__?.API_BASE +
+      '/market/openapi/upload',
+  )
+  const headers = ref({
+    Authorization: `Bearer ${Storage.get('token')}`,
+  })
   const pageInfo = ref({
     loading: false,
     loadingText: t('api.action.loadingText'),
@@ -76,5 +86,5 @@ export const useDocsTableHooks = () => {
     pageSize: 10,
   })
 
-  return { t, columns, requestConfig, tablePlus, pageConfig, pageInfo }
+  return { t, columns, requestConfig, tablePlus, pageConfig, pageInfo, action, headers }
 }

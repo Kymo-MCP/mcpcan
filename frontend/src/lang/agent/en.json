@@ -23,7 +23,7 @@
     "action": {
       "create": "Create Agent",
       "community": "Community",
-      "enterprise": "Enterprise",
+      "enterprise": "Coze-Sass",
       "n8n": "N8N",
       "successConnection": "Connection Test Successful",
       "failConnectionTips": "Platform connection failed; do you still want to save?",
@@ -63,7 +63,8 @@
       "cookie": "Please enter cookie; Use cookie to connect and sync agent platform namespaces",
       "baseUrl": "Please enter platform URL",
       "username": "Please enter userName",
-      "password": "Please enter password"
+      "password": "Please enter password",
+      "cozeUserID": "Please enter Coze user UID"
     },
     "sync": {
       "platform": "Platform: ",

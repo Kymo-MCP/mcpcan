@@ -585,13 +585,13 @@ func (biz *InstanceBiz) RestartInstance(ctx context.Context, req *instancepb.Res
 		return nil, fmt.Errorf("instance does not exist")
 	}
 
-	switch instance.AccessType {
-	case model.AccessTypeHosting:
+	if instance.AccessType == model.AccessTypeHosting {
 		_, err = GContainerBiz.RestartContainer(ctx, instance)
 		if err != nil {
 			return nil, err
 		}
-	default:
+	}
+	if instance.AccessType == model.AccessTypeDirect {
 		return nil, fmt.Errorf("this service does not need to be restarted")
 	}
 
@@ -634,6 +634,10 @@ func (biz *InstanceBiz) DisableInstance(ctx context.Context, instanceID string) 
 		}
 		msg = res.Message
 	}
+	if instance.AccessType == model.AccessTypeDirect {
+		return "", fmt.Errorf("this service does not need to be disabled")
+	}
+
 	instance.Status = model.InstanceStatusInactive
 	instance.ContainerIsReady = false
 	instance.ContainerStatus = model.ContainerStatusManualStop

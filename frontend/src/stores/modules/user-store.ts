@@ -112,6 +112,8 @@ export const useUserStore = defineStore('user', () => {
           resolve(data)
         })
         .catch((err) => {
+          // 登录失败重新获取秘钥
+          handleGetEncryptionKey()
           reject(err)
         })
     })

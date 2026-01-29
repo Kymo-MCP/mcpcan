@@ -1,0 +1,288 @@
+{
+  "configurations": [
+    {
+      "name": "Python 3.11 - uv/pip - Streamable-HTTP",
+      "meta": {
+        "language": "python",
+        "version": "3.11",
+        "virtual_env": "uv",
+        "dependency_tool": "pip",
+        "protocol": "streamable-http",
+        "service_path": "/mcp"
+      },
+      "commands": {
+        "install": "v=3.11.9\n# Pyenv mirror (Huawei Cloud):\nmkdir -p ~/.pyenv/cache/\nwget -nc https://mirrors.huaweicloud.com/python/$v/Python-$v.tar.xz -P ~/.pyenv/cache/\n# uv mirror (Aliyun):\nexport UV_PYPI_MIRROR=https://mirrors.aliyun.com/pypi/simple/\n\ncd /app/codepkg/mcp-sys-monitor/\npyenv install -s $v\npyenv local $v\nuv venv\nsource .venv/bin/activate\nuv pip install -r requirements.txt",
+        "start": "cd /app/codepkg/mcp-sys-monitor/ && source .venv/bin/activate && python server/main.py --transport=streamable-http --port=8080"
+      },
+      "description": "Python 3.11 极速环境 (uv) - Streamable-HTTP 模式: 适用于追求极致性能的 Web 服务。使用 Rust 编写的 uv 工具和高效的 HTTP 流式传输。",
+      "description_en": "Python 3.11 High Performance (uv) - Streamable-HTTP: For fastest setup and efficient HTTP streaming."
+    },
+    {
+      "name": "Python 3.11 - uv/pip - SSE",
+      "meta": {
+        "language": "python",
+        "version": "3.11",
+        "virtual_env": "uv",
+        "dependency_tool": "pip",
+        "protocol": "sse",
+        "service_path": "/sse"
+      },
+      "commands": {
+        "install": "v=3.11.9\n# Pyenv mirror (Huawei Cloud):\nmkdir -p ~/.pyenv/cache/\nwget -nc https://mirrors.huaweicloud.com/python/$v/Python-$v.tar.xz -P ~/.pyenv/cache/\n# uv mirror (Aliyun):\nexport UV_PYPI_MIRROR=https://mirrors.aliyun.com/pypi/simple/\n\ncd /app/codepkg/mcp-sys-monitor/\npyenv install -s $v\npyenv local $v\nuv venv\nsource .venv/bin/activate\nuv pip install -r requirements.txt",
+        "start": "cd /app/codepkg/mcp-sys-monitor/ && source .venv/bin/activate && python server/main.py --transport=sse --port=8080"
+      },
+      "description": "Python 3.11 极速环境 (uv) - SSE 模式: 适用于追求极致性能的 Web 服务。使用 Rust 编写的 uv 工具。",
+      "description_en": "Python 3.11 High Performance (uv) - SSE: For fastest setup and web serving."
+    },
+    {
+      "name": "Python 3.11 - uv/pip - Stdio",
+      "meta": {
+        "language": "python",
+        "version": "3.11",
+        "virtual_env": "uv",
+        "dependency_tool": "pip",
+        "protocol": "stdio",
+        "mcp-servers-config": {
+          "mcpServers": {
+            "default": {
+              "command": "sh",
+              "args": [
+                "-c",
+                "source .venv/bin/activate && exec python server/main.py --transport=stdio"
+              ],
+              "cwd": "/app/codepkg/mcp-sys-monitor"
+            }
+          }
+        },
+        "service_path": "/mcp"
+      },
+      "commands": {
+        "install": "v=3.11.9\n# Pyenv mirror (Huawei Cloud):\nmkdir -p ~/.pyenv/cache/\nwget -nc https://mirrors.huaweicloud.com/python/$v/Python-$v.tar.xz -P ~/.pyenv/cache/\n# uv mirror (Aliyun):\nexport UV_PYPI_MIRROR=https://mirrors.aliyun.com/pypi/simple/\n\ncd /app/codepkg/mcp-sys-monitor/\npyenv install -s $v\npyenv local $v\nuv venv\nsource .venv/bin/activate\nuv pip install -r requirements.txt\necho 'Dependency installation complete. Config is managed by meta.'",
+        "start": "mcp-hosting --port=%d --mcp-servers-config /app/mcp-servers.json"
+      },
+      "description": "Python 3.11 极速环境 (uv) - Stdio 模式: 适用于追求极致性能的 MCP 客户端集成。",
+      "description_en": "Python 3.11 High Performance (uv) - Stdio: For fastest setup and MCP client integration."
+    },
+    {
+      "name": "Python 3.10 - Global/pip - Stdio",
+      "meta": {
+        "language": "python",
+        "version": "3.10",
+        "virtual_env": "none",
+        "dependency_tool": "pip",
+        "protocol": "stdio",
+        "mcp-servers-config": {
+          "mcpServers": {
+            "default": {
+              "command": "bash",
+              "args": ["-c", "pyenv local 3.10 && exec python server/main.py --transport=stdio"],
+              "cwd": "/app/codepkg/mcp-sys-monitor"
+            }
+          }
+        },
+        "service_path": "/mcp"
+      },
+      "commands": {
+        "install": "v=3.10.14\n# Pyenv mirror (Huawei Cloud):\nmkdir -p ~/.pyenv/cache/\nwget -nc https://mirrors.huaweicloud.com/python/$v/Python-$v.tar.xz -P ~/.pyenv/cache/\n# pip mirror (Aliyun):\npip config set global.index-url https://mirrors.aliyun.com/pypi/simple/\n\ncd /app/codepkg/mcp-sys-monitor/\npyenv install -s $v\npyenv local $v\npip install -r requirements.txt\necho 'Dependency installation complete. Config is managed by meta.'",
+        "start": "mcp-hosting --port=%d --mcp-servers-config /app/mcp-servers.json"
+      },
+      "description": "Python 3.10 全局环境 - Stdio 模式: 适用于 Docker 容器或一次性 CI 环境。直接安装到系统路径，无虚拟环境隔离。",
+      "description_en": "Python 3.10 Global - Stdio: For Docker/CI. Installs directly to system path."
+    },
+    {
+      "name": "Node.js 20 - npm - SSE",
+      "meta": {
+        "language": "nodejs",
+        "version": "20",
+        "virtual_env": "none",
+        "dependency_tool": "npm",
+        "protocol": "sse",
+        "service_path": "/sse"
+      },
+      "commands": {
+        "install": "# npm mirror (Aliyun):\n# npm config set registry https://registry.npmmirror.com\n\nsource $HOME/.nvm/nvm.sh\nnvm install 20\nnvm use 20\ncd /app/codepkg/mcp-sys-monitor/\nnpm install",
+        "start": "source $HOME/.nvm/nvm.sh && nvm use 20 && cd /app/codepkg/mcp-sys-monitor/ && npm start -- --transport=sse --port=8080"
+      },
+      "description": "Node.js 20 LTS (npm) - SSE 模式: 推荐用于生产环境 Web 服务。使用 NVM 切换版本，npm 管理依赖。",
+      "description_en": "Node.js 20 LTS (npm) - SSE: Recommended for production web services. Uses NVM and npm."
+    },
+    {
+      "name": "Node.js 20 - npm - Stdio",
+      "meta": {
+        "language": "nodejs",
+        "version": "20",
+        "virtual_env": "none",
+        "dependency_tool": "npm",
+        "protocol": "stdio",
+        "mcp-servers-config": {
+          "mcpServers": {
+            "default": {
+              "command": "sh",
+              "args": [
+                "-c",
+                "source $HOME/.nvm/nvm.sh && nvm use 20 && exec node index.js --transport=stdio"
+              ],
+              "cwd": "/app/codepkg/mcp-sys-monitor"
+            }
+          }
+        },
+        "service_path": "/mcp"
+      },
+      "commands": {
+        "install": "# npm mirror (Aliyun):\n# npm config set registry https://registry.npmmirror.com\n\nsource $HOME/.nvm/nvm.sh\nnvm install 20\nnvm use 20\ncd /app/codepkg/mcp-sys-monitor/\nnpm install\necho 'Dependency installation complete. Config is managed by meta.'",
+        "start": "mcp-hosting --port=%d --mcp-servers-config /app/mcp-servers.json"
+      },
+      "description": "Node.js 20 LTS (npm) - Stdio 模式: 适用于 MCP 客户端集成。直接使用 node 运行以避免 npm 输出干扰标准流。",
+      "description_en": "Node.js 20 LTS (npm) - Stdio: For MCP client integration. Runs directly with node to avoid npm noise."
+    },
+    {
+      "name": "Node.js 22 - pnpm - SSE",
+      "meta": {
+        "language": "nodejs",
+        "version": "22",
+        "virtual_env": "none",
+        "dependency_tool": "pnpm",
+        "protocol": "sse",
+        "service_path": "/sse"
+      },
+      "commands": {
+        "install": "# npm mirror (Aliyun):\n# npm config set registry https://registry.npmmirror.com\n# pnpm mirror (Aliyun):\n# pnpm config set registry https://registry.npmmirror.com\n\nsource $HOME/.nvm/nvm.sh\nnvm install 22\nnvm use 22\ncd /app/codepkg/mcp-sys-monitor/\npnpm install",
+        "start": "source $HOME/.nvm/nvm.sh && nvm use 22 && cd /app/codepkg/mcp-sys-monitor/ && pnpm start -- --transport=sse --port=8080"
+      },
+      "description": "Node.js 22 Latest (pnpm) - SSE 模式: 适用于尝鲜和高性能 Web 构建。pnpm 节省磁盘空间并加快安装速度。",
+      "description_en": "Node.js 22 Latest (pnpm) - SSE: For high performance web builds using pnpm."
+    },
+    {
+      "name": "Node.js 22 - pnpm - Stdio",
+      "meta": {
+        "language": "nodejs",
+        "version": "22",
+        "virtual_env": "none",
+        "dependency_tool": "pnpm",
+        "protocol": "stdio",
+        "mcp-servers-config": {
+          "mcpServers": {
+            "default": {
+              "command": "sh",
+              "args": [
+                "-c",
+                "source $HOME/.nvm/nvm.sh && nvm use 22 && exec node index.js --transport=stdio"
+              ],
+              "cwd": "/app/codepkg/mcp-sys-monitor"
+            }
+          }
+        },
+        "service_path": "/mcp"
+      },
+      "commands": {
+        "install": "# npm mirror (Aliyun):\n# npm config set registry https://registry.npmmirror.com\n# pnpm mirror (Aliyun):\n# pnpm config set registry https://registry.npmmirror.com\n\nsource $HOME/.nvm/nvm.sh\nnvm install 22\nnvm use 22\ncd /app/codepkg/mcp-sys-monitor/\npnpm install\necho 'Dependency installation complete. Config is managed by meta.'",
+        "start": "mcp-hosting --port=%d --mcp-servers-config /app/mcp-servers.json"
+      },
+      "description": "Node.js 22 Latest (pnpm) - Stdio 模式: 适用于尝鲜和高性能 MCP 客户端集成。",
+      "description_en": "Node.js 22 Latest (pnpm) - Stdio: For high performance MCP client integration."
+    },
+    {
+      "name": "Node.js - Direct - SSE",
+      "meta": {
+        "language": "nodejs",
+        "version": "system",
+        "virtual_env": "none",
+        "dependency_tool": "npm",
+        "protocol": "sse",
+        "service_path": "/sse"
+      },
+      "commands": {
+        "install": "# npm mirror (Aliyun):\n# npm config set registry https://registry.npmmirror.com\n\ncd /app/codepkg/mcp-sys-monitor/\nnpm install",
+        "start": "cd /app/codepkg/mcp-sys-monitor/ && node index.js --transport=sse --port=8080"
+      },
+      "description": "Node.js 直接启动 - SSE 模式: 使用系统 Node.js 环境，不依赖 nvm。适用于已预装 Node.js 的容器或环境。",
+      "description_en": "Node.js Direct - SSE: Uses system Node.js without nvm. For pre-configured environments."
+    },
+    {
+      "name": "Node.js - Direct - Stdio",
+      "meta": {
+        "language": "nodejs",
+        "version": "system",
+        "virtual_env": "none",
+        "dependency_tool": "npm",
+        "protocol": "stdio",
+        "mcp-servers-config": {
+          "mcpServers": {
+            "default": {
+              "command": "sh",
+              "args": ["-c", "exec node index.js --transport=stdio"],
+              "cwd": "/app/codepkg/mcp-sys-monitor"
+            }
+          }
+        },
+        "service_path": "/mcp"
+      },
+      "commands": {
+        "install": "# npm mirror (Aliyun):\n# npm config set registry https://registry.npmmirror.com\n\ncd /app/codepkg/mcp-sys-monitor/\nnpm install\necho 'Dependency installation complete. Config is managed by meta.'",
+        "start": "mcp-hosting --port=%d --mcp-servers-config /app/mcp-servers.json"
+      },
+      "description": "Node.js 直接启动 - Stdio 模式: 使用系统 Node.js 环境。直接调用 node 运行，无额外封装。",
+      "description_en": "Node.js Direct - Stdio: Uses system Node.js. Direct execution."
+    },
+    {
+      "name": "Binary - Linux - SSE",
+      "meta": {
+        "language": "binary",
+        "version": "latest",
+        "virtual_env": "none",
+        "dependency_tool": "none",
+        "protocol": "sse",
+        "service_path": "/sse"
+      },
+      "commands": {
+        "install": "cd /app/codepkg/mcp-sys-monitor/\nchmod +x mcp-sys-monitor-linux",
+        "start": "cd /app/codepkg/mcp-sys-monitor/ && ./mcp-sys-monitor-linux --transport=sse --port=8080"
+      },
+      "description": "Linux AMD64 二进制直连 - SSE 模式: 无需任何依赖，直接运行编译好的二进制文件提供 Web 服务。",
+      "description_en": "Linux AMD64 Binary - SSE: Standalone executable web server. No dependencies required."
+    },
+    {
+      "name": "Binary - Linux - Stdio",
+      "meta": {
+        "language": "binary",
+        "version": "latest",
+        "virtual_env": "none",
+        "dependency_tool": "none",
+        "protocol": "stdio",
+        "mcp-servers-config": {
+          "mcpServers": {
+            "default": {
+              "command": "/app/codepkg/mcp-sys-monitor/mcp-sys-monitor-linux",
+              "args": ["--transport=stdio"],
+              "cwd": "/app/codepkg/mcp-sys-monitor"
+            }
+          }
+        },
+        "service_path": "/mcp"
+      },
+      "commands": {
+        "install": "cd /app/codepkg/mcp-sys-monitor/\nchmod +x mcp-sys-monitor-linux\necho 'Dependency installation complete. Config is managed by meta.'",
+        "start": "mcp-hosting --port=%d --mcp-servers-config /app/mcp-servers.json"
+      },
+      "description": "Linux AMD64 二进制直连 - Stdio 模式: 适用于极简的 MCP 客户端集成。零依赖。",
+      "description_en": "Linux AMD64 Binary - Stdio: Minimalist standalone executable for MCP clients."
+    },
+    {
+      "name": "Shell - Custom Script - SSE",
+      "meta": {
+        "language": "custom",
+        "version": "any",
+        "virtual_env": "custom",
+        "dependency_tool": "custom",
+        "protocol": "sse",
+        "service_path": "/sse"
+      },
+      "commands": {
+        "install": "cd /app/codepkg/mcp-sys-monitor/\nchmod +x *.sh\n./install.sh",
+        "start": "cd /app/codepkg/mcp-sys-monitor/ && ./start.sh"
+      },
+      "description": "自定义 Shell 脚本 - SSE 模式: 通过 install.sh 和 start.sh 封装复杂的启动逻辑。已优化路径解析。",
+      "description_en": "Custom Shell Script - SSE: Encapsulates logic via install.sh/start.sh. Path-aware."
+    }
+  ]
+}

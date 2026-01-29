@@ -63,7 +63,8 @@
       "cookie": "请输入cookie; 通过cookie连接可同步的智能体平台命名空间",
       "baseUrl": "请输入平台地址",
       "username": "请输入用户名",
-      "password": "请输入密码"
+      "password": "请输入密码",
+      "cozeUserID": "请输入Coze用户UID"
     },
     "sync": {
       "platform": "平台：",

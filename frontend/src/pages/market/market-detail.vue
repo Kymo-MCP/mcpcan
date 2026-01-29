@@ -127,6 +127,7 @@ import MarkdownIt from 'markdown-it'
 import baseConfig from '@/config/base_config.ts'
 import McpButton from '@/components/mcp-button/index.vue'
 import McpImage from '@/components/mcp-image/index.vue'
+import { AccessType } from '@/types/instance.ts'
 
 const layout = useLayout()
 const { t, locale, jumpBack, jumpToPage, currentMCP } = useMarketDetailHooks()
@@ -168,6 +169,7 @@ const handleCreate = () => {
     data: {
       from: 'market',
       mcpId: currentMCP.id,
+      type: AccessType.HOSTING,
     },
   })
 }

@@ -1,6 +1,6 @@
 import { AgentAPI } from '@/api/agent/index'
 import { timestampToDate } from '@/utils/system'
-import { kymo, coze, n8n } from '@/utils/logo.ts'
+import { kymo, dify, coze, n8n } from '@/utils/logo.ts'
 import { AgentType } from '@/types/agent'
 
 export const useAgentTableHooks = () => {
@@ -11,7 +11,8 @@ export const useAgentTableHooks = () => {
     loadingText: t('agent.pageDesc.connectionDesc'),
   })
   const logoIcon = ref<any>({
-    Dify: kymo,
+    DifyEnterprise: dify,
+    Dify: dify,
     COZE: coze,
     N8N: n8n,
   })

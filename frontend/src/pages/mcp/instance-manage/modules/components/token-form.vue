@@ -6,7 +6,8 @@
     label-position="top"
     class="mx-2"
   >
-    <el-form-item :label="t('mcp.token.authentication')" prop="tokenType">
+    <el-form-item prop="tokenType" v-if="false">
+      <!-- :label="t('mcp.token.authentication')" -->
       <div class="w-full u-line-1" style="white-space: nowrap">
         Authorization：{{ localFormData.token }}
       </div>
@@ -99,7 +100,8 @@
         </el-row>
       </div>
     </el-form-item>
-    <el-form-item :label="t('mcp.instance.token.tag')" prop="usages">
+    <el-form-item prop="usages">
+      <!-- :label="t('mcp.instance.token.tag')" -->
       <el-tag
         v-for="(tag, num) in localFormData.usages"
         :key="num"
@@ -285,7 +287,7 @@ onMounted(init)
 </script>
 <style lang="scss" scoped>
 :deep(.el-form-item__label) {
-  width: 100%;
+  width: 100% !important;
 }
 :deep(.el-form-item__content) {
   display: block;

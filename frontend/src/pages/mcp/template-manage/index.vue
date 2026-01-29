@@ -21,8 +21,9 @@
       :columns="columns"
       v-model:pageConfig="pageConfig"
       :handlerColumnConfig="{
-        width: '120px',
+        width: '220px',
         fixed: 'right',
+        align: 'center',
       }"
     >
       <template #action>
@@ -53,35 +54,18 @@
         </div>
       </template>
       <template #operation="{ row }">
-        <div class="flex align-center">
-          <el-button size="small" link @click="handleEditTemplate(row)" class="base-btn-link">
-            {{ t('env.run.action.edit') }}
-          </el-button>
-          <el-dropdown
-            trigger="click"
-            class="ml-4"
-            @click.stop
-            :show-arrow="false"
-            @command="(cmd: string) => handleCommand(cmd, row)"
-          >
-            <el-icon class="link-hover cursor-pointer"><More /></el-icon>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="handleCreatInstance">
-                  {{ t('mcp.template.action.createInstance') }}
-                </el-dropdown-item>
-                <el-dropdown-item command="handleDeleteTemplate">
-                  <el-button type="danger" link>
-                    {{ t('mcp.instance.action.delete') }}
-                  </el-button>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
+        <el-button size="small" link @click="handleEditTemplate(row)" class="base-btn-link">
+          {{ t('env.run.action.edit') }}
+        </el-button>
+        <el-button size="small" link @click="handleCreatInstance(row)" class="base-btn-link">
+          {{ t('mcp.template.action.createInstance') }}
+        </el-button>
+        <el-button type="danger" link @click="handleDeleteTemplate(row)">
+          {{ t('mcp.instance.action.delete') }}
+        </el-button>
       </template>
     </TablePlus>
-
+    <AccessTypeDialog ref="accessTypeDialog"></AccessTypeDialog>
     <!-- Create a intance by openAPI docs -->
     <OpenAPIDialog ref="openAPIDialog" @on-refresh="init"></OpenAPIDialog>
   </div>
@@ -99,21 +83,24 @@ import McpButton from '@/components/mcp-button/index.vue'
 import McpImage from '@/components/mcp-image/index.vue'
 import { SourceType, type TemplateResult } from '@/types/index.ts'
 import OpenAPIDialog from '../instance-manage/modules/open-api-dialog.vue'
+import AccessTypeDialog from '../instance-manage/modules/access-type.vue'
 
 const { t } = useI18n()
 const { tablePlus, columns, requestConfig, pageConfig } = useTemplateTableHooks()
 const { jumpToPage } = useRouterHooks()
 const openAPIDialog = ref()
 const baseUrl = (window as any).__APP_CONFIG__?.PUBLIC_PATH || ''
+const accessTypeDialog = ref()
 
 /**
  * Handle create a tamplate
  */
 const handleAddTemplate = () => {
-  jumpToPage({
-    url: '/new-template',
-    data: {},
-  })
+  accessTypeDialog.value.init()
+  // jumpToPage({
+  //   url: '/new-template',
+  //   data: {},
+  // })
 }
 
 /**
@@ -129,6 +116,7 @@ const handleEditTemplate = (row: TemplateResult) => {
     url: '/new-template',
     data: {
       templateId: row.templateId,
+      type: row.accessType,
     },
   })
 }
@@ -169,12 +157,12 @@ const handleDeleteTemplate = (row: TemplateResult) => {
  */
 const handleCreatInstance = (row: TemplateResult) => {
   if (row.sourceType === SourceType.OPENAPI) {
-    openAPIDialog.value.init(row.templateId, 'create')
+    openAPIDialog.value.init(row.templateId, 'instance')
     return
   }
   jumpToPage({
     url: '/new-instance',
-    data: { templateId: row.templateId },
+    data: { templateId: row.templateId, type: row.accessType },
   })
 }
 

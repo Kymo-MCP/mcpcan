@@ -58,11 +58,6 @@ func (biz *TemplateBiz) GetAllTemplates(ctx context.Context) ([]*model.McpTempla
 	return mysql.McpTemplateRepo.FindAll(ctx)
 }
 
-// GetTemplatesByEnvironmentID get template list by environment ID
-func (biz *TemplateBiz) GetTemplatesByEnvironmentID(ctx context.Context, environmentID uint) ([]*model.McpTemplate, error) {
-	return mysql.McpTemplateRepo.FindByEnvironmentID(ctx, environmentID)
-}
-
 // GetTemplatesByAccessType get template list by access type
 func (biz *TemplateBiz) GetTemplatesByAccessType(ctx context.Context, accessType model.AccessType) ([]*model.McpTemplate, error) {
 	return mysql.McpTemplateRepo.FindByAccessType(ctx, accessType)

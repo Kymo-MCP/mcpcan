@@ -42,7 +42,9 @@ $--colors: (
 
 // 页码
 .el-pagination.is-background .el-pager li {
+  color: var(--el-color-primary);
   &.is-active {
+    color: var(--el-color-primary);
     background-color: var(--ep-pager-bg);
     border: 1px solid var(--ep-pager-border);
   }
