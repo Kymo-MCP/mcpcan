@@ -659,7 +659,7 @@ func createCozeTools(domain string, insertInfo *model.InsertIntelligentInfo, mcp
 
 		name := mcpInstance.InstanceName
 		if len(name) >= 30 {
-			name = mcpInstance.InstanceName[:50]
+			name = mcpInstance.InstanceName[:30]
 		}
 
 		resp, err := coze.RegisterPlugin(&coze.RegisterPluginRequest{
