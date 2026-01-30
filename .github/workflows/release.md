@@ -2,21 +2,32 @@
 
 ## 🚀 Features
 
-- **Debug Tools**: Implemented comprehensive debug tools, including schema forms, tool lists, and run status indicators. (89817db, ea88c60, 0d934d3)
-- **UI/UX**: Added search tips and internationalization support (en/zh-cn). (a431880, 8b8c647, c1b65f4)
-- **Templates**: Supported multiple languages and protocol configurations in template data. (81f885e)
+- **Initialization**: Added intelligent access, MCPCAN template, and OpenAPI document initialization. (c443abf, a0ef2df, 1578507)
+- **Protocol**: Added STREAMABLE_HTTP support. (e0f453b)
+- **Market**: Supported instance creation with market. (6b7a10a)
+- **Coze Integration**: Supported personal UUID validation for Coze sync. (2ef029d)
+- **Templates**: Updated template model. (80a306d, b024de1)
 
 ## 🐛 Bug Fixes
 
-- **Validation**: Added length restriction for MCP names. (6c0edcb)
-- **Instance ID**: Fixed InstanceID to be strictly lowercase. (26680c8)
-- **Frontend**: Fixed domain handling logic. (7d23f64, 7e68134)
+- **Instance**: Fixed access type check logic during restart/disable. (cb8feb2)
+- **Initialization**: Fixed repeated OpenAPI base package initialization. (4767296)
+- **General**: Fixed various operation issues. (75df227)
 
 ## ♻️ Refactor
 
-- **Init Data**: Updated code package configurations and replaced example files. (13fd47e)
-- **Configuration**: Simplified template configuration file and updated Amap documentation link. (b3a0ee6)
+- **Initialization**: Refactored MCP template initialization and standardized field values. (946784c, 2a786d0)
+- **Templates**: Simplified deployment templates and removed environment association logic. (03887df, 7f2064d)
+
+## 📝 Documentation & UI
+
+- **Copy & Guide**: Optimized interface copy, access type descriptions, and proxy header priority explanation. (8b5530e, f3c7787, bb45aad, c866dad)
+- **I18n**: Implemented and improved internationalization support. (c9aad7c, d8b8dcb, b494987, 5760964, 08d9280)
+- **SEO**: Optimized index.html for SEO. (fe45dc9)
+- **Config**: Added documentation for OpenAPI storage path. (ee4fe4e)
 
 ## 🔧 Chore
 
-- **Assets**: Added static image resources for MCP system monitor. (adfe1b8)
+- **Versioning**: Bumped versions. (ea88eaf, fb5c126, 84c2980)
+- **UI Components**: Updated forms, buttons, and display logic. (aa2f6de, 7a974ec, 112d4ed, 7fb3a84, 23620b1, 74aa499)
+- **Config**: Updated .gitignore. (6902f46)
