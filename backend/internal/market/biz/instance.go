@@ -1244,14 +1244,14 @@ func (biz *InstanceBiz) UpdateInstanceStatusToPending(ctx context.Context, insta
 // ListTools list tools of instance
 func (biz *InstanceBiz) ListTools(ctx context.Context, instanceID string, domain string) ([]mcp.Tool, error) {
 	// 获取 mcp 客户端
-	mcpClient, err := biz.getMcpClientInfo(instanceID, domain)
+	mcpClient, err := biz.getMcpClientInfo(ctx, instanceID, domain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mcp client: %s", err.Error())
 	}
 	defer mcpClient.Close()
 
 	// 调用 mcp 服务的 list tools 接口
-	tools, err := mcpClient.ListTools(context.Background(), mcp.ListToolsRequest{})
+	tools, err := mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("list tools failed: %s", err.Error())
 	}
@@ -1260,14 +1260,14 @@ func (biz *InstanceBiz) ListTools(ctx context.Context, instanceID string, domain
 
 func (biz *InstanceBiz) CallTool(ctx context.Context, instanceID string, toolName string, arguments any, domain string) (interface{}, error) {
 	// 获取 mcp 客户端
-	mcpClient, err := biz.getMcpClientInfo(instanceID, domain)
+	mcpClient, err := biz.getMcpClientInfo(ctx, instanceID, domain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get mcp client: %s", err.Error())
 	}
 	defer mcpClient.Close()
 
 	// 调用 mcp 服务的 call tool 接口
-	resp, err := mcpClient.CallTool(context.Background(), mcp.CallToolRequest{
+	resp, err := mcpClient.CallTool(ctx, mcp.CallToolRequest{
 		Params: mcp.CallToolParams{
 			Name:      toolName,
 			Arguments: arguments,
@@ -1279,7 +1279,7 @@ func (biz *InstanceBiz) CallTool(ctx context.Context, instanceID string, toolNam
 	return resp, nil
 }
 
-func (biz *InstanceBiz) getMcpClientInfo(instanceID string, domain string) (*client.Client, error) {
+func (biz *InstanceBiz) getMcpClientInfo(ctx context.Context, instanceID string, domain string) (*client.Client, error) {
 	mcpInstance, err := biz.GetInstance(instanceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get instance: %s", err.Error())
@@ -1288,7 +1288,7 @@ func (biz *InstanceBiz) getMcpClientInfo(instanceID string, domain string) (*cli
 		return nil, fmt.Errorf("instance does not exist")
 	}
 
-	tokens, err := mysql.McpTokenRepo.ListByInstanceID(context.Background(), mcpInstance.InstanceID)
+	tokens, err := mysql.McpTokenRepo.ListByInstanceID(ctx, mcpInstance.InstanceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list tokens: %s", err.Error())
 	}
@@ -1317,14 +1317,14 @@ func (biz *InstanceBiz) getMcpClientInfo(instanceID string, domain string) (*cli
 
 	// 给该 mcp 实例创建对应的 http client
 	var mcpClient *client.Client
-	mcpClient, err = BuildMcpClient(mcpInstance, mcpServerUrl, listToolsHeader)
+	mcpClient, err = BuildMcpClient(ctx, mcpInstance, mcpServerUrl, listToolsHeader)
 	if err != nil {
 		return nil, fmt.Errorf("create mcp client failed: %s", err.Error())
 	}
 	return mcpClient, nil
 }
 
-func BuildMcpClient(mcpInstance *model.McpInstance, mcpServerUrl string, headers map[string]string) (*client.Client, error) {
+func BuildMcpClient(ctx context.Context, mcpInstance *model.McpInstance, mcpServerUrl string, headers map[string]string) (*client.Client, error) {
 	// 给该 mcp 实例创建对应的 http client
 	var mcpClient *client.Client
 	var err error
@@ -1343,8 +1343,14 @@ func BuildMcpClient(mcpInstance *model.McpInstance, mcpServerUrl string, headers
 		return nil, fmt.Errorf("create mcp client failed: %s", err.Error())
 	}
 
-	_, err = mcpClient.Initialize(context.Background(), mcp.InitializeRequest{})
+	if err := mcpClient.Start(ctx); err != nil {
+		_ = mcpClient.Close()
+		return nil, fmt.Errorf("start mcp transport failed: %s", err.Error())
+	}
+
+	_, err = mcpClient.Initialize(ctx, mcp.InitializeRequest{})
 	if err != nil {
+		_ = mcpClient.Close()
 		return nil, fmt.Errorf("init mcp failed (DEBUG_TAG): %s", err.Error())
 	}
 	return mcpClient, nil
