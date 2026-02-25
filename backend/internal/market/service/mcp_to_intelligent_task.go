@@ -814,10 +814,11 @@ func createDifyTools(domain string, insertInfo *model.InsertIntelligentInfo, mcp
 
 	var mcpClient *client.Client
 	var err error
-	mcpClient, err = biz.BuildMcpClient(mcpInstance, mcpInstance.ContainerServiceURL, listToolsHeaders)
+	mcpClient, err = biz.BuildMcpClient(context.Background(), mcpInstance, mcpInstance.ContainerServiceURL, listToolsHeaders)
 	if err != nil {
 		return fmt.Errorf("create mcp client failed: %s", err.Error())
 	}
+	defer mcpClient.Close()
 	// 调用 mcp 服务的 list tools 接口
 	tools, err := mcpClient.ListTools(context.Background(), mcp.ListToolsRequest{})
 	if err != nil {
