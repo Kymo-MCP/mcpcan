@@ -1,7 +1,8 @@
 <template>
   <el-dialog
-    v-model:value="currentVisible"
-    v-bind="props"
+    v-model="currentVisible"
+    :title="props.title"
+    append-to-body
     width="680px"
     top="6vh"
     :show-close="false"
@@ -43,7 +44,11 @@
             </slot>
           </el-radio>
         </el-radio-group>
-        <el-empty v-else></el-empty>
+        <template v-else>
+          <slot name="empty">
+            <el-empty></el-empty>
+          </slot>
+        </template>
       </el-scrollbar>
     </div>
     <template #footer>
@@ -108,9 +113,15 @@ const currentVisible = ref(props.modelValue)
 const currentSelected = ref(props.selected)
 const searchKeyword = ref('')
 const _options = computed(() => {
-  const escapedKeyword = searchKeyword.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const regex = new RegExp(escapedKeyword, 'i')
-  return props.options.filter((item: any) => item.name && regex.test(item.name))
+  try {
+    const escapedKeyword = searchKeyword.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(escapedKeyword, 'i')
+    const opts = Array.isArray(props.options) ? props.options : []
+    return opts.filter((item: any) => item.name && regex.test(item.name))
+  } catch (e) {
+    console.error('Select options parse error:', e)
+    return []
+  }
 })
 
 const emit = defineEmits<{

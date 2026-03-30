@@ -2,8 +2,8 @@ apiVersion: v2
 name: mcpcan
 description: A Helm chart for MCPCan - Microservices Container Platform
 type: application
-version: v2.1.1
-appVersion: v2.1.1
+version: v2.1.3
+appVersion: v2.1.3
 keywords:
   - mcpcan
   - microservices

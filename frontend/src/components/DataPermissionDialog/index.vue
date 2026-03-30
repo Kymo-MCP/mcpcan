@@ -174,7 +174,7 @@
                     <el-icon :size="16"><OfficeBuilding /></el-icon>
                   </el-avatar>
                   <span class="dp-selected-name">{{ item.name }}</span>
-                  <span class="dp-remove-btn" @click="removeSelectedDept(item.id)">移除</span>
+                  <span v-if="!isProtectedAdminDept(item.id)" class="dp-remove-btn" @click="removeSelectedDept(item.id)">移除</span>
                 </div>
                 <!-- 已选角色 -->
                 <div
@@ -186,7 +186,7 @@
                     <el-icon :size="16"><UserFilled /></el-icon>
                   </el-avatar>
                   <span class="dp-selected-name">{{ item.name }}</span>
-                  <span class="dp-remove-btn" @click="removeSelectedRole(item.id)">移除</span>
+                  <span v-if="!isProtectedAdminRole(item)" class="dp-remove-btn" @click="removeSelectedRole(item.id)">移除</span>
                 </div>
                 <!-- 已选人员 -->
                 <div
@@ -203,7 +203,7 @@
                       >{{ item.deptName }}{{ item.nickName ? `，${item.nickName}` : '' }}</span
                     >
                   </span>
-                  <span class="dp-remove-btn" @click="removeSelectedUser(item.id)">移除</span>
+                  <span v-if="!isProtectedAdminUser(item.id)" class="dp-remove-btn" @click="removeSelectedUser(item.id)">移除</span>
                 </div>
                 <el-empty
                   v-if="
@@ -340,8 +340,23 @@ import { OfficeBuilding, UserFilled } from '@element-plus/icons-vue'
 import { DeptAPI, RoleAPI, UserAPI } from '@/api/system/index'
 import { DataPermissionAPI } from '@/api/data-permission/index'
 import type { DataPermissionResult } from '@/api/data-permission/index'
+import { useUserStore } from '@/stores/modules/user-store.ts'
 
 const { t } = useI18n()
+
+const { userInfo } = useUserStore()
+const isAdmin = computed(() => userInfo.isAdmin === true)
+
+// 判定管理员账户不可被脱保的辅助函数
+const isProtectedAdminDept = (deptId: number) => {
+  return isAdmin.value && String(deptId) === String(userInfo.deptId)
+}
+const isProtectedAdminRole = (roleItem: any) => {
+  return isAdmin.value && (roleItem.name === 'admin' || (userInfo.roleIds || []).some((id: any) => String(id) === String(roleItem.id)))
+}
+const isProtectedAdminUser = (userId: number) => {
+  return isAdmin.value && String(userId) === String(userInfo.userId)
+}
 
 // ===================== 基础状态 =====================
 const dialogVisible = ref(false)
@@ -652,10 +667,22 @@ const removeBlacklistUser = (id: number) => {
 
 // ===================== 清除访问授权已选 =====================
 const handleClearAccess = () => {
-  selectedDeptIds.value = []
-  selectedRoleIds.value = []
-  selectedUserIds.value = []
-  nextTick(() => deptTreeRef.value?.setCheckedKeys([]))
+  if (isAdmin.value) {
+    selectedDeptIds.value = selectedDeptIds.value.filter(id => isProtectedAdminDept(id))
+    selectedRoleIds.value = selectedRoleIds.value.filter(id => {
+      const role = roleList.value.find(r => r.id === id)
+      return role ? isProtectedAdminRole(role) : false
+    })
+    selectedUserIds.value = selectedUserIds.value.filter(id => isProtectedAdminUser(id))
+    nextTick(() => {
+      deptTreeRef.value?.setCheckedKeys(selectedDeptIds.value)
+    })
+  } else {
+    selectedDeptIds.value = []
+    selectedRoleIds.value = []
+    selectedUserIds.value = []
+    nextTick(() => deptTreeRef.value?.setCheckedKeys([]))
+  }
 }
 
 // ===================== 事件 =====================

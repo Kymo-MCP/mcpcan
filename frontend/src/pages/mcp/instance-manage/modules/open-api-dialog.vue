@@ -163,23 +163,44 @@
     @confirm="handleGetAPIDetail"
     :options="docsList"
   >
-    <template #action>
-      <el-upload
-        class="mr-8"
-        drag
-        :action="action"
-        :on-success="handleSuccess"
-        :before-upload="handleBeforeUpload"
-        :headers="headers"
-        accept=".yaml, .JSON, application/yaml, application/JSON"
-        :auto-upload="true"
-        :show-file-list="false"
-      >
-        <el-icon><UploadFilled /></el-icon>
-        <div class="ml-2">
-          {{ t('mcp.instance.openApi.localFile') }}
+    <template #empty>
+      <div v-if="!hasUploadPerm" class="flex flex-col center items-center color-gray py-20">
+        <el-icon size="60" class="mb-4"><Lock /></el-icon>
+        <div class="text-base font-bold mb-2" style="color:var(--el-text-color-primary)">当前角色暂无 "创建/上传 OpenAPI 资源" 权限</div>
+        <div class="text-sm text-center leading-relaxed mt-2" style="color:var(--el-text-color-secondary)">
+          由于您的账号未被授予该操作权限，且无公共的共享文档记录，故当前列表为空。<br/>请联系系统管理员（Admin）在「角色管理」中为您分配该项权限。
         </div>
-      </el-upload>
+      </div>
+      <div v-else class="py-10">
+        <el-empty :image-size="120">
+          <template #description>
+            <div class="text-[var(--ep-text-color-secondary)] text-sm">
+              当前暂无 OpenAPI 文档记录。<br/>
+              请点击右上角 <strong style="color:var(--ep-text-color-primary)">本地上传</strong> 按钮添加您的接口文档。
+            </div>
+          </template>
+        </el-empty>
+      </div>
+    </template>
+    <template #action>
+      <div v-if="hasUploadPerm" style="min-width: 160px;">
+        <el-upload
+          class="mr-4"
+          drag
+          :action="action"
+          :on-success="handleSuccess"
+          :before-upload="handleBeforeUpload"
+          :headers="headers"
+          accept=".yaml, .JSON, application/yaml, application/JSON"
+          :auto-upload="true"
+          :show-file-list="false"
+        >
+          <el-icon><UploadFilled /></el-icon>
+          <div class="ml-2">
+            {{ t('mcp.instance.openApi.localFile') }}
+          </div>
+        </el-upload>
+      </div>
     </template>
   </Select>
 </template>
@@ -188,7 +209,7 @@
 import baseConfig from '@/config/base_config.ts'
 import { Storage } from '@/utils/storage'
 import { ElMessage } from 'element-plus'
-import { UploadFilled, Files } from '@element-plus/icons-vue'
+import { UploadFilled, Files, Lock } from '@element-plus/icons-vue'
 import McpImage from '@/components/mcp-image/index.vue'
 import { openapi } from '@/utils/logo.ts'
 import McpButton from '@/components/mcp-button/index.vue'
@@ -207,12 +228,20 @@ import InstanceHeaders from './components/instance-headers.vue'
 import { TemplateAPI } from '@/api/mcp/template'
 import { useRouterHooks } from '@/utils/url'
 
-const { userInfo } = useUserStore()
+const userStore = useUserStore()
+const { userInfo } = userStore
 const { envList } = toRefs(useMcpStoreHook())
 const { handleGetEnvList } = useMcpStoreHook()
 const { jumpToPage } = useRouterHooks()
 const { t, locale } = useI18n()
 const emit = defineEmits(['on-refresh'])
+
+const hasUploadPerm = computed(() => {
+  const appConfig = (window as any).__APP_CONFIG__ || {}
+  if (appConfig.CodeMode === 'OpenCode') return true
+  return userStore.currentBtnAuths?.includes('mcpcan_resource_manage:create_openapi')
+})
+
 const INTERNAL_ENTRY_BASE_URL_PLACEHOLDER = '{{MCPCAN_INTERNAL_ENTRY_BASE_URL}}'
 const dialogInfo = ref<any>({
   visible: false,
@@ -555,9 +584,12 @@ const handleSuccess = (response: { code: number; data: { openapiFileId: string }
   if (response.code !== 0) {
     return
   }
-  formData.value.openapiFileID = response.data.openapiFileId
+  const newId = response.data.openapiFileId
+  formData.value.openapiFileID = newId
   ElMessage.success(t('action.upload'))
   handleGetAPIlist()
+  selectVisible.value = false
+  handleGetAPIDetail(newId)
 }
 
 // get openapi file detail
