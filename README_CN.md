@@ -1,12 +1,3 @@
-> [!CAUTION]
-> **⚠️ v1.x 已停止维护 — 重大架构升级公告**
->
-> **v2.x 是对 v1.x 的完全重写，两者存在架构级不兼容。v1.x 系列因存在根本性设计缺陷（全局网关单点、init 服务独立、双镜像策略），即日起停止维护，不再接受任何 PR、Issue 或安全补丁。**
->
-> 主要破坏性变更：全局 `mcp-gateway` → Traefik Sidecar 按实例注入 | `mcp-init` 废弃，初始化合并进 `mcp-market` | 双镜像 → 单镜像 `CODE_MODE` 运行时切换 | Helm Chart 名称 `mcpcan-deploy` → `mcpcan` | **不支持原地升级，必须全量重新安装**
->
-> 📋 **[查看完整 v2.1 Release Notes（中文）](.github/workflows/release_zh.md)** · 📦 **[v2.x 升级指引](docs/zh/guide/install.md)**
-
 <div align="center">
   <img width="1872" height="932" alt="image" src="images/image_cn.png" />
 </div>

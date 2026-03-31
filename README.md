@@ -1,12 +1,3 @@
-> [!CAUTION]
-> **⚠️ v1.x is End-of-Life — Major Architecture Upgrade Notice**
->
-> **v2.x is a complete rewrite of v1.x with breaking architectural changes. The v1.x series has fundamental design flaws (global gateway single-point-of-failure, standalone init service, dual-image strategy) and is end-of-life — no PRs, Issues, or security patches will be accepted.**
->
-> Key breaking changes: Global `mcp-gateway` → per-instance Traefik Sidecar | `mcp-init` retired, init merged into `mcp-market` | Dual-image → single image with `CODE_MODE` runtime switch | Helm chart renamed `mcpcan-deploy` → `mcpcan` | **In-place upgrades are NOT supported — full reinstall required**
->
-> 📋 **[View full v2.1 Release Notes](.github/workflows/release.md)** · 📦 **[v2.x Migration Guide](docs/en/guide/install.md)**
-
 <div align="center">
   <img width="1872" height="932" alt="image" src="images/image.png" />
 
