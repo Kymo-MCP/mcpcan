@@ -15,8 +15,9 @@ BUILD_TIME := $(shell date +%Y%m%d%H%M%S)
 DOCK_REGISTRY=77kymo
 TENCENT_REGISTRY=ccr.ccs.tencentyun.com/itqm-private
 
-# Standard Multi-Platform Specification
-PLATFORMS=linux/amd64,linux/arm64
+# Platform policies
+PLATFORMS_DOCKER=linux/amd64,linux/arm64
+PLATFORM_CCR=linux/amd64
 
 # Go build environment (Local builds)
 GO_PROXY ?= https://goproxy.cn/
@@ -41,14 +42,26 @@ LDFLAGS := -X 'github.com/kymo-mcp/mcpcan/pkg/version.Version=${VERSION}' \
 		-X 'github.com/kymo-mcp/mcpcan/pkg/version.GoVersion=${GO_VERSION}' \
 		-X 'github.com/kymo-mcp/mcpcan/pkg/version.CodeMode=${CodeMode}'
 
-# Multi-arch Build logic (Industry Standard)
-# Paras: 1-DockerfileSuffix, 2-ImageName, 3-Registry
-define push_multiarch_image
-	@echo "Building and pushing multi-arch image $(3)/$(2):$(VERSION) platforms: $(PLATFORMS)..."
-	docker buildx build --platform $(PLATFORMS) \
+# Docker Hub multi-arch push logic
+# Paras: 1-DockerfileSuffix, 2-ImageName
+define push_image_docker_multiarch
+	@echo "Building and pushing multi-arch image $(DOCK_REGISTRY)/$(2):$(VERSION) platforms: $(PLATFORMS_DOCKER)..."
+	docker buildx build --platform $(PLATFORMS_DOCKER) \
 		--build-arg CodeMode=$(CodeMode) \
-		-t $(3)/$(2):$(VERSION) \
-		-t $(3)/$(2):latest \
+		-t $(DOCK_REGISTRY)/$(2):$(VERSION) \
+		-t $(DOCK_REGISTRY)/$(2):latest \
+		-f $(DOCKERFILES_PATH)/Dockerfile.$(1) \
+		--push .
+endef
+
+# CCR amd64-only push logic
+# Paras: 1-DockerfileSuffix, 2-ImageName
+define push_image_ccr_amd64
+	@echo "Building and pushing amd64 image $(TENCENT_REGISTRY)/$(2):$(VERSION) platform: $(PLATFORM_CCR)..."
+	docker buildx build --platform $(PLATFORM_CCR) \
+		--build-arg CodeMode=$(CodeMode) \
+		-t $(TENCENT_REGISTRY)/$(2):$(VERSION) \
+		-t $(TENCENT_REGISTRY)/$(2):latest \
 		-f $(DOCKERFILES_PATH)/Dockerfile.$(1) \
 		--push .
 endef
@@ -85,10 +98,10 @@ pnpm-build:
 help:
 	@echo "Usage: make [target]"
 	@echo "Targets:"
-	@echo "  push-all           - Build and push multi-arch images (Market, Authz, Web)"
-	@echo "  push-market        - Build and push multi-arch Market image"
-	@echo "  push-authz         - Build and push multi-arch Authz image"
-	@echo "  push-frontend      - Build and push multi-arch Frontend (Web) image"
+	@echo "  push-all           - Push CCR amd64 + Docker multi-arch images (Market, Authz, Web)"
+	@echo "  push-market        - Push Market image (CCR amd64, Docker multi-arch)"
+	@echo "  push-authz         - Push Authz image (CCR amd64, Docker multi-arch)"
+	@echo "  push-frontend      - Push Frontend image (CCR amd64, Docker multi-arch)"
 	@echo "  proto-buf          - Generate protobuf files"
 	@echo "  go-build-market    - Local Go build for market"
 	@echo "  sync-docs          - Sync documentation from tools submodule"
@@ -99,20 +112,20 @@ push-all: push-market push-authz push-frontend
 
 .PHONY: push-market
 push-market:
-	$(call push_multiarch_image,market,mcp-market,$(TENCENT_REGISTRY))
-	$(call push_multiarch_image,market,mcp-market,$(DOCK_REGISTRY))
+	$(call push_image_ccr_amd64,market,mcp-market)
+	$(call push_image_docker_multiarch,market,mcp-market)
 	$(call push_readme_doc,mcp-market,MCP Market Service)
 
 .PHONY: push-authz
 push-authz:
-	$(call push_multiarch_image,authz,mcp-authz,$(TENCENT_REGISTRY))
-	$(call push_multiarch_image,authz,mcp-authz,$(DOCK_REGISTRY))
+	$(call push_image_ccr_amd64,authz,mcp-authz)
+	$(call push_image_docker_multiarch,authz,mcp-authz)
 	$(call push_readme_doc,mcp-authz,MCP Authorization Service)
 
 .PHONY: push-frontend
 push-frontend:
-	$(call push_multiarch_image,frontend,mcp-web,$(TENCENT_REGISTRY))
-	$(call push_multiarch_image,frontend,mcp-web,$(DOCK_REGISTRY))
+	$(call push_image_ccr_amd64,frontend,mcp-web)
+	$(call push_image_docker_multiarch,frontend,mcp-web)
 	$(call push_readme_doc,mcp-web,MCP Web Frontend)
 
 # Remaining Utility targets

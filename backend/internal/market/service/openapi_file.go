@@ -22,6 +22,17 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	defaultOpenapiDocName = "mcpcan-openapi.yaml"
+	defaultOpenapiDocPath = "./init-data/openapi-file/mcpcan-openapi.yaml"
+)
+
+var legacyOpenapiRoots = []string{
+	"/app/data/openapi-file",
+	"/data/mcpcan/openapi-file",
+	"/data/mcp-enterprise/openapi-file",
+}
+
 // OpenapiService provides OpenAPI document management services
 type OpenapiService struct {
 	openapiPackageRepo *mysql.McpOpenapiPackageRepository
@@ -158,11 +169,23 @@ func (s *OpenapiService) GetOpenapiFileContent(c *gin.Context) {
 	// Use file manager to get file content
 	content, err := s.fileManager.GetOpenapiFileContent(openapiPackage.OpenapiFilePath)
 	if err != nil {
+		if isOpenapiFileMissingError(err) {
+			if recoverErr := s.tryRecoverOpenapiFile(openapiPackage); recoverErr != nil {
+				logger.Warn("Failed to auto-recover OpenAPI document",
+					zap.String("openapiFileId", req.OpenapiFileId),
+					zap.String("filePath", openapiPackage.OpenapiFilePath),
+					zap.Error(recoverErr))
+			} else {
+				content, err = s.fileManager.GetOpenapiFileContent(openapiPackage.OpenapiFilePath)
+			}
+		}
+	}
+	if err != nil {
 		logger.Error("Failed to read OpenAPI file content",
 			zap.String("openapiFileId", req.OpenapiFileId),
 			zap.String("filePath", openapiPackage.OpenapiFilePath),
 			zap.Error(err))
-		if os.IsNotExist(err) {
+		if isOpenapiFileMissingError(err) {
 			common.GinError(c, i18nresp.OpenapiFileNotFound, "OpenAPI document file not found")
 		} else {
 			common.GinError(c, i18nresp.OpenapiFileParseError, "failed to read OpenAPI document")
@@ -496,4 +519,117 @@ func convertOpenapiFileType(modelType model.OpenapiFileType) openapi_file.Openap
 	default:
 		return openapi_file.OpenapiFileType_OpenapiFileTypeUnspecified
 	}
+}
+
+func isOpenapiFileMissingError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if os.IsNotExist(err) {
+		return true
+	}
+	return strings.Contains(strings.ToLower(err.Error()), "not found")
+}
+
+// tryRecoverDefaultOpenapiFile restores the built-in OpenAPI document when the physical file is lost.
+// Only the default base document can be recovered from init-data.
+func (s *OpenapiService) tryRecoverOpenapiFile(openapiPackage *model.McpOpenapiPackage) error {
+	absFilePath, err := s.fileManager.ToAbsolutePath(openapiPackage.OpenapiFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to resolve openapi file path: %w", err)
+	}
+	for _, sourcePath := range buildOpenapiRecoverSourceCandidates(openapiPackage.OpenapiFilePath) {
+		if sourcePath == "" || sourcePath == absFilePath {
+			continue
+		}
+		if _, statErr := os.Stat(sourcePath); statErr != nil {
+			continue
+		}
+		if err := copyFile(sourcePath, absFilePath); err != nil {
+			return fmt.Errorf("failed to recover openapi file from legacy path: %w", err)
+		}
+		logger.Info("OpenAPI document recovered from legacy path",
+			zap.String("openapiFileId", openapiPackage.OpenapiFileID),
+			zap.String("sourcePath", sourcePath),
+			zap.String("targetPath", absFilePath))
+		return nil
+	}
+	return s.tryRecoverDefaultOpenapiFile(openapiPackage, absFilePath)
+}
+
+func (s *OpenapiService) tryRecoverDefaultOpenapiFile(openapiPackage *model.McpOpenapiPackage, absFilePath string) error {
+	if openapiPackage == nil {
+		return fmt.Errorf("openapi package is nil")
+	}
+	if openapiPackage.BaseOpenapiFileID != "" {
+		return fmt.Errorf("openapi document is derived, skip auto-recovery")
+	}
+	if openapiPackage.OriginalName != defaultOpenapiDocName {
+		return fmt.Errorf("openapi document is not default template, skip auto-recovery")
+	}
+	if _, err := os.Stat(defaultOpenapiDocPath); err != nil {
+		return fmt.Errorf("default openapi source not found: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(absFilePath), 0755); err != nil {
+		return fmt.Errorf("failed to create openapi directory: %w", err)
+	}
+	content, err := os.ReadFile(defaultOpenapiDocPath)
+	if err != nil {
+		return fmt.Errorf("failed to read default openapi source: %w", err)
+	}
+	if err := os.WriteFile(absFilePath, content, 0644); err != nil {
+		return fmt.Errorf("failed to restore openapi file: %w", err)
+	}
+	logger.Info("OpenAPI document restored from init-data",
+		zap.String("openapiFileId", openapiPackage.OpenapiFileID),
+		zap.String("filePath", absFilePath))
+	return nil
+}
+
+func buildOpenapiRecoverSourceCandidates(openapiFilePath string) []string {
+	candidates := make([]string, 0, len(legacyOpenapiRoots)*2+1)
+	if filepath.IsAbs(openapiFilePath) {
+		cleanPath := filepath.Clean(openapiFilePath)
+		candidates = append(candidates, cleanPath)
+		openapiMarker := fmt.Sprintf("%sopenapi-file%s", string(os.PathSeparator), string(os.PathSeparator))
+		if idx := strings.Index(cleanPath, openapiMarker); idx >= 0 {
+			relativeTail := strings.TrimPrefix(cleanPath[idx+len(openapiMarker):], string(os.PathSeparator))
+			for _, root := range legacyOpenapiRoots {
+				candidates = append(candidates, filepath.Join(root, relativeTail))
+			}
+		}
+	} else {
+		relativePath := filepath.Clean(openapiFilePath)
+		for _, root := range legacyOpenapiRoots {
+			candidates = append(candidates, filepath.Join(root, relativePath))
+		}
+	}
+	return dedupeStrings(candidates)
+}
+
+func dedupeStrings(input []string) []string {
+	result := make([]string, 0, len(input))
+	seen := make(map[string]struct{}, len(input))
+	for _, item := range input {
+		if item == "" {
+			continue
+		}
+		if _, ok := seen[item]; ok {
+			continue
+		}
+		seen[item] = struct{}{}
+		result = append(result, item)
+	}
+	return result
+}
+
+func copyFile(src, dst string) error {
+	content, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(dst, content, 0644)
 }

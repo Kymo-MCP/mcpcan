@@ -11,7 +11,11 @@
       <div class="flex items-center">
         <span class="mr-4">{{ dialogInfo.title }}</span>
         <el-alert
-          :title="locale === 'en' ? 'Note: MCP services imported via OpenAPI will be accessed using the STREAMABLE_HTTP protocol.' : '注：通过 OpenAPI 文档导入的 MCP 服务将默认以 STREAMABLE_HTTP 协议访问'"
+          :title="
+            locale === 'en'
+              ? 'Note: MCP services imported via OpenAPI will be accessed using the STREAMABLE_HTTP protocol.'
+              : '注：通过 OpenAPI 文档导入的 MCP 服务将默认以 STREAMABLE_HTTP 协议访问'
+          "
           type="warning"
           show-icon
           :closable="false"
@@ -58,9 +62,7 @@
                 :placeholder="t('mcp.instance.openApi.serviceUrl')"
               />
             </el-form-item>
-            <InstanceHeaders
-              v-model:headers="formData.passthroughHeaders"
-            />
+            <InstanceHeaders v-model:headers="formData.passthroughHeaders" />
             <el-form-item :label="t('mcp.template.formData.notes')" prop="notes">
               <el-input
                 v-model="formData.notes"
@@ -166,24 +168,31 @@
     <template #empty>
       <div v-if="!hasUploadPerm" class="flex flex-col center items-center color-gray py-20">
         <el-icon size="60" class="mb-4"><Lock /></el-icon>
-        <div class="text-base font-bold mb-2" style="color:var(--el-text-color-primary)">当前角色暂无 "创建/上传 OpenAPI 资源" 权限</div>
-        <div class="text-sm text-center leading-relaxed mt-2" style="color:var(--el-text-color-secondary)">
-          由于您的账号未被授予该操作权限，且无公共的共享文档记录，故当前列表为空。<br/>请联系系统管理员（Admin）在「角色管理」中为您分配该项权限。
+        <div class="text-base font-bold mb-2" style="color: var(--el-text-color-primary)">
+          当前角色暂无 "创建/上传 OpenAPI 资源" 权限
+        </div>
+        <div
+          class="text-sm text-center leading-relaxed mt-2"
+          style="color: var(--el-text-color-secondary)"
+        >
+          由于您的账号未被授予该操作权限，且无公共的共享文档记录，故当前列表为空。<br />请联系系统管理员（Admin）在「角色管理」中为您分配该项权限。
         </div>
       </div>
       <div v-else class="py-10">
         <el-empty :image-size="120">
           <template #description>
             <div class="text-[var(--ep-text-color-secondary)] text-sm">
-              当前暂无 OpenAPI 文档记录。<br/>
-              请点击右上角 <strong style="color:var(--ep-text-color-primary)">本地上传</strong> 按钮添加您的接口文档。
+              当前暂无 OpenAPI 文档记录。<br />
+              请点击右上角
+              <strong style="color: var(--ep-text-color-primary)">本地上传</strong>
+              按钮添加您的接口文档。
             </div>
           </template>
         </el-empty>
       </div>
     </template>
     <template #action>
-      <div v-if="hasUploadPerm" style="min-width: 160px;">
+      <div v-if="hasUploadPerm" style="min-width: 160px">
         <el-upload
           class="mr-4"
           drag
@@ -335,6 +344,15 @@ const defaultCheckedKeys = ref<any[]>([])
 const apiTreeRef = ref(null)
 const docObject = ref<any>(null)
 const originFileText = ref<any>(null)
+
+const resetOpenapiDocSelection = () => {
+  formData.value.openapiFileID = ''
+  formData.value.chooseOpenapiFileID = ''
+  apiNodeList.value = []
+  defaultCheckedKeys.value = []
+  docObject.value = null
+  originFileText.value = null
+}
 
 const action = ref(
   baseConfig.SERVER_BASE_URL + (window as any).__APP_CONFIG__?.API_BASE + '/market/openapi/upload',
@@ -601,8 +619,12 @@ const handleGetAPIDetail = async (id: string) => {
     await handleValidFile(content)
     handleDefaultCheckedKeys(content)
     handleDefaultNodeAPIlist(content)
-  } catch {
-    formData.value.openapiFileID = ''
+  } catch (err) {
+    console.error('Failed to load selected OpenAPI document', err)
+    resetOpenapiDocSelection()
+    ElMessage.warning(
+      t('mcp.instance.openApi.docNotFoundButContinue', '关联的 OpenAPI 文档丢失，请重新选择'),
+    )
   } finally {
     dialogInfo.value.loading = false
   }
@@ -612,6 +634,10 @@ const handleGetAPIDetail = async (id: string) => {
  * Handle file upload again
  */
 const handleUploadAgain = async () => {
+  if (!docObject.value || !docObject.value.paths) {
+    ElMessage.error(t('mcp.instance.openApi.validFileFail'))
+    return false
+  }
   // Reset form data
   const newDoc = JSON.parse(JSON.stringify(docObject.value))
   for (const path in newDoc.paths) {
@@ -643,12 +669,15 @@ const handleUploadAgain = async () => {
     const body = await res.json()
     if (body?.code === 0 && body.data?.openapiFileId) {
       formData.value.chooseOpenapiFileID = body.data.openapiFileId
+      return true
     } else {
       ElMessage.error(t('action.uploadFail'))
+      return false
     }
   } catch (err) {
     console.error('upload error', err)
     ElMessage.error(t('action.uploadFail'))
+    return false
   } finally {
     dialogInfo.value.loading = false
   }
@@ -665,9 +694,13 @@ const handleConfirm = async () => {
   try {
     // handle selected APIs; assemble the selected paths into a new OpenAPI document and upload
     if (originFileText.value) {
-      await handleUploadAgain()
+      const uploadOk = await handleUploadAgain()
+      if (!uploadOk) {
+        return
+      }
     } else {
       ElMessage.error(t('mcp.instance.openApi.validFileFail'))
+      return
     }
     baseInfo.value.validate(async (valid: boolean) => {
       if (currentCheckedKeys.value.length === 0) {
@@ -682,7 +715,9 @@ const handleConfirm = async () => {
         }
         // 将透传 headers 数组转换为 map 格式传给后端
         const passthroughHeadersMap = Object.fromEntries(
-          (formData.value.passthroughHeaders || []).map((h: any) => [h.key, h.value]).filter((e: any) => e[0]),
+          (formData.value.passthroughHeaders || [])
+            .map((h: any) => [h.key, h.value])
+            .filter((e: any) => e[0]),
         )
         dialogInfo.value.loading = true
         // 提交数据
@@ -739,7 +774,10 @@ const handleGetDetail = async (id: string) => {
     dialogInfo.value.loading = true
     const data = await InstanceAPI.detail({ instanceId: id })
     // 将 headers map 转换为 { key, value }[] 数组回填
-    const passthroughHeaders = Object.entries(data.headers || {}).map(([key, value]) => ({ key, value: value as string }))
+    const passthroughHeaders = Object.entries(data.headers || {}).map(([key, value]) => ({
+      key,
+      value: value as string,
+    }))
     formData.value = {
       ...data,
       chooseOpenapiFileID: data.packageId,
@@ -756,13 +794,20 @@ const handleGetDetail = async (id: string) => {
     await handleValidFile(content)
     // handle default checked keys
     handleDefaultCheckedKeys(content)
-    formData.value.openapiFileID = baseOpenapiFileID
+    const baseFileID = baseOpenapiFileID || data.packageId
+    formData.value.openapiFileID = baseFileID
     // get original api document content
     const res = await DocsAPI.fileContent({
-      openapiFileId: baseOpenapiFileID,
+      openapiFileId: baseFileID,
     })
     handleDefaultNodeAPIlist(res.content)
     console.log('instance detail data2', formData.value)
+  } catch (err) {
+    console.error('Failed to load instance OpenAPI document', err)
+    resetOpenapiDocSelection()
+    ElMessage.warning(
+      t('mcp.instance.openApi.docNotFoundButContinue', '关联的 OpenAPI 文档丢失，请重新选择'),
+    )
   } finally {
     dialogInfo.value.loading = false
   }
@@ -812,15 +857,23 @@ const handleTemplateDetail = async (id: string) => {
     ],
   }
   // get openapi file content
-  const { content } = await DocsAPI.fileContent({
-    openapiFileId: data.packageId,
-  })
-  // validate file content
-  await handleValidFile(content)
-  // handle default checked keys
-  handleDefaultCheckedKeys(content)
+  try {
+    const { content } = await DocsAPI.fileContent({
+      openapiFileId: data.packageId,
+    })
+    // validate file content
+    await handleValidFile(content)
+    // handle default checked keys
+    handleDefaultCheckedKeys(content)
 
-  handleDefaultNodeAPIlist(content)
+    handleDefaultNodeAPIlist(content)
+  } catch (err) {
+    console.error('Failed to load referenced OpenAPI document', err)
+    resetOpenapiDocSelection()
+    ElMessage.warning(
+      t('mcp.instance.openApi.docNotFoundButContinue', '关联的 OpenAPI 文档丢失，请重新选择'),
+    )
+  }
 }
 
 /**
