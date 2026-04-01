@@ -225,7 +225,7 @@ import McpButton from '@/components/mcp-button/index.vue'
 import Select from '@/components/mcp-select/index.vue'
 import Upload from '@/components/upload/index.vue'
 import yaml from 'js-yaml'
-import { buildApiTree } from '@/utils/json.ts'
+import { buildApiTree, getOperationNodeId } from '@/utils/json.ts'
 import { DocsAPI } from '@/api/api-docs'
 import { useMcpStoreHook, useUserStore } from '@/stores'
 import { InstanceAPI } from '@/api/mcp/instance'
@@ -644,7 +644,8 @@ const handleUploadAgain = async () => {
     const obj = newDoc.paths[path] || {}
     for (const method in obj) {
       const mKey = method as unknown as string
-      if (!currentCheckedKeys.value.includes(obj[mKey].operationId)) {
+      const operationNodeID = getOperationNodeId(path, mKey, obj[mKey])
+      if (!currentCheckedKeys.value.includes(operationNodeID)) {
         delete obj[mKey]
       }
     }

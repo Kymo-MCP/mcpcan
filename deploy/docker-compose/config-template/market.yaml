@@ -36,6 +36,8 @@ storage:
 init:
   admin_username: ${ADMIN_USERNAME}
   admin_password: ${ADMIN_PASSWORD}
+  admin_password_policy: ${INIT_ADMIN_PASSWORD_POLICY}
+  menu_sync_policy: ${INIT_MENU_SYNC_POLICY}
   admin_nickname: ${ADMIN_NICKNAME}
   admin_role_name: ${ADMIN_ROLE_NAME}
   admin_role_description: ${ADMIN_ROLE_DESCRIPTION}

@@ -57,6 +57,8 @@ docker compose up -d
 | `VERSION`         | 系统版本标签                 |
 | `ADMIN_USERNAME`  | 初始管理员账号               |
 | `ADMIN_PASSWORD`  | 初始管理员密码               |
+| `INIT_ADMIN_PASSWORD_POLICY` | 管理员密码初始化策略（`create_only`/`force_reset`） |
+| `INIT_MENU_SYNC_POLICY` | 菜单同步策略（`off`/`add_only`/`full_sync`） |
 
 ---
 

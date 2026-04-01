@@ -135,6 +135,13 @@ func (biz *InstanceBiz) createInstanceDirectMode(ctx context.Context, req *insta
 		}
 	}
 
+	tokensToSave := biz.buildCreateTokens(instanceID, req.EnabledToken, req.Tokens)
+	if len(tokensToSave) > 0 {
+		if err := biz.SaveTokensForInstance(ctx, tokensToSave); err != nil {
+			return nil, fmt.Errorf("failed to save tokens for instance: %w", err)
+		}
+	}
+
 	// Save instance to database
 	if err := biz.CreateInstanceRecord(ctx, instance); err != nil {
 		return nil, fmt.Errorf("failed to create instance: %w", err)
@@ -230,12 +237,9 @@ func (biz *InstanceBiz) CreateOpenapiInstance(ctx context.Context, req *instance
 		}
 	}
 
-	if len(req.Tokens) > 0 {
-		// add instance id to tokens
-		for _, token := range req.Tokens {
-			token.InstanceId = instanceID
-		}
-		if err := biz.SaveTokensForInstance(ctx, req.Tokens); err != nil {
+	tokensToSave := biz.buildCreateTokens(instanceID, req.EnabledToken, req.Tokens)
+	if len(tokensToSave) > 0 {
+		if err := biz.SaveTokensForInstance(ctx, tokensToSave); err != nil {
 			return nil, fmt.Errorf("failed to save tokens for instance: %w", err)
 		}
 	}
@@ -288,9 +292,13 @@ func (biz *InstanceBiz) createInstanceProxyMode(ctx context.Context, req *instan
 	}
 	proxyProtocol := mcpProtocol
 	publicProxyPath := biz.CreatePublicProxyPath(instanceID, proxyProtocol)
+	environmentID, err := biz.resolveProxyEnvironmentID(ctx, req.EnvironmentId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve proxy runtime environment: %w", err)
+	}
 
 	// DEBUG: 临时日志，验证 EnvironmentId 接收值
-	fmt.Printf("[DEBUG] createInstanceProxyMode: req.EnvironmentId=%d, mcpProtocol=%s\n", req.EnvironmentId, mcpProtocol)
+	fmt.Printf("[DEBUG] createInstanceProxyMode: req.EnvironmentId=%d, resolvedEnvironmentId=%d, mcpProtocol=%s\n", req.EnvironmentId, environmentID, mcpProtocol)
 
 	// Create new instance record
 	instance := &model.McpInstance{
@@ -308,7 +316,7 @@ func (biz *InstanceBiz) createInstanceProxyMode(ctx context.Context, req *instan
 		EnabledToken:    req.EnabledToken,
 		PublicProxyPath: publicProxyPath,
 		ProxyProtocol:   proxyProtocol,
-		EnvironmentID:   uint(req.EnvironmentId),
+		EnvironmentID:   uint(environmentID),
 	}
 	if req.Headers != nil && len(req.Headers) > 0 {
 		if b, err := json.Marshal(req.Headers); err == nil {
@@ -317,30 +325,27 @@ func (biz *InstanceBiz) createInstanceProxyMode(ctx context.Context, req *instan
 	}
 
 	// 如果指定了环境，我们需要启动翻译代理 Sidecar，以此支持完整的代理鉴权及多重协议（如 stdio / http）的转发
-	if req.EnvironmentId > 0 {
+	if environmentID > 0 {
 		options, err := GContainerBiz.BuildProxySidecarOptions(ctx, instanceID, validationResult.Url)
 		if err != nil {
 			return nil, fmt.Errorf("failed to build proxy sidecar options: %w", err)
 		}
-		err = GContainerBiz.CreateContainer(ctx, options, req.EnvironmentId, req.StartupTimeout)
+		err = GContainerBiz.CreateContainer(ctx, options, environmentID, req.StartupTimeout)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create proxy sidecar container: %w", err)
 		}
 		instance.ContainerName = options.ContainerName
 		instance.ContainerServiceName = options.ServiceName
-		instance.ContainerServiceURL = biz.getContainerServiceURL(options.ContainerName, options.ServiceName)
-		instance.EnvironmentID = uint(req.EnvironmentId)
+		instance.ContainerServiceURL = biz.getProxyContainerServiceURL(ctx, uint(environmentID), options.ContainerName, options.ServiceName)
+		instance.EnvironmentID = uint(environmentID)
 		// 路由协议转换为 SSE (经 sidecar 重写)
 		instance.ProxyProtocol = model.McpProtocolSSE
 		instance.PublicProxyPath = biz.CreatePublicProxyPath(instanceID, model.McpProtocolSSE)
 	}
 
-	if len(req.Tokens) > 0 {
-		// add instance id to tokens
-		for _, token := range req.Tokens {
-			token.InstanceId = instanceID
-		}
-		if err := biz.SaveTokensForInstance(ctx, req.Tokens); err != nil {
+	tokensToSave := biz.buildCreateTokens(instanceID, req.EnabledToken, req.Tokens)
+	if len(tokensToSave) > 0 {
+		if err := biz.SaveTokensForInstance(ctx, tokensToSave); err != nil {
 			return nil, fmt.Errorf("failed to save tokens for instance: %w", err)
 		}
 	}
@@ -477,12 +482,9 @@ func (biz *InstanceBiz) createInstanceHosting(ctx context.Context, req *instance
 			instance.Headers = b
 		}
 	}
-	if len(req.Tokens) > 0 {
-		// add instance id to tokens
-		for _, token := range req.Tokens {
-			token.InstanceId = instanceID
-		}
-		if err := biz.SaveTokensForInstance(ctx, req.Tokens); err != nil {
+	tokensToSave := biz.buildCreateTokens(instanceID, req.EnabledToken, req.Tokens)
+	if len(tokensToSave) > 0 {
+		if err := biz.SaveTokensForInstance(ctx, tokensToSave); err != nil {
 			return nil, fmt.Errorf("failed to save tokens for instance: %w", err)
 		}
 	}
@@ -903,6 +905,34 @@ func (biz *InstanceBiz) SaveTokensForInstance(ctx context.Context, tokens []*ins
 	return nil
 }
 
+// buildCreateTokens ensures instance tokens are ready for persistence.
+// When token auth is enabled and caller didn't provide tokens, create one default gateway token.
+func (biz *InstanceBiz) buildCreateTokens(instanceID string, enabledToken bool, reqTokens []*instancepb.McpToken) []*instancepb.McpToken {
+	nowMs := time.Now().UnixMilli()
+	tokens := make([]*instancepb.McpToken, 0, len(reqTokens)+1)
+	for _, token := range reqTokens {
+		if token == nil {
+			continue
+		}
+		tokenCopy := *token
+		tokenCopy.InstanceId = instanceID
+		if tokenCopy.PublishAt == 0 {
+			tokenCopy.PublishAt = nowMs
+		}
+		tokens = append(tokens, &tokenCopy)
+	}
+	if enabledToken && len(tokens) == 0 {
+		tokens = append(tokens, &instancepb.McpToken{
+			InstanceId: instanceID,
+			Token:      "Bearer " + uuid.NewString(),
+			Enabled:    true,
+			PublishAt:  nowMs,
+			Usages:     []string{"default"},
+		})
+	}
+	return tokens
+}
+
 // ListInstance get instance list
 func (biz *InstanceBiz) ListInstance(page, pageSize int32, filters map[string]interface{}, sortBy, sortOrder string) (*instancepb.ListResp, error) {
 	// Query data
@@ -1058,7 +1088,7 @@ func (biz *InstanceBiz) UpdateInstanceForProxy(ctx context.Context, req *instanc
 				oriInstance.ContainerCreateOptions = optJSON
 				oriInstance.ContainerName = options.ContainerName
 				oriInstance.ContainerServiceName = options.ServiceName
-				oriInstance.ContainerServiceURL = biz.getContainerServiceURL(options.ContainerName, options.ServiceName)
+				oriInstance.ContainerServiceURL = biz.getProxyContainerServiceURL(ctx, oriInstance.EnvironmentID, options.ContainerName, options.ServiceName)
 
 				// 修复：K8s 环境下使用 RestartContainer 进行异步删除与重建等待，防止 "object is being deleted"
 				if _, errRestart := GContainerBiz.RestartContainer(ctx, oriInstance); errRestart != nil {
@@ -1191,7 +1221,6 @@ func (biz *InstanceBiz) UpdateInstanceForOpenapi(ctx context.Context, req *insta
 		Status:      string(model.InstanceStatusActive),
 	}, nil
 }
-
 
 // UpdateInstanceForHosting updates instance
 func (biz *InstanceBiz) UpdateInstanceForHosting(ctx context.Context, req *instancepb.EditRequest, oriInstance *model.McpInstance) (*instancepb.EditResp, error) {
@@ -1536,6 +1565,55 @@ func getDefaultToken(tokens []*model.McpToken) *model.McpToken {
 
 func (biz *InstanceBiz) getSidecarServiceName(containerName string) string {
 	return containerName + common.SidecarContainerSuffix
+}
+
+// getProxyContainerServiceURL returns proxy container service URL.
+// Proxy mode uses dedicated sidecar container as main runtime:
+// - docker: resolve by container name
+// - kubernetes: resolve by service name
+func (biz *InstanceBiz) getProxyContainerServiceURL(ctx context.Context, environmentID uint, containerName, serviceName string) string {
+	host := containerName
+	if environmentID > 0 {
+		if env, err := mysql.McpEnvironmentRepo.FindByID(ctx, environmentID); err == nil && env != nil {
+			if env.Environment == model.McpEnvironmentKubernetes && serviceName != "" {
+				host = serviceName
+			}
+		}
+	}
+	return fmt.Sprintf("http://%s:%d/", host, common.GetSidecarPort())
+}
+
+// resolveProxyEnvironmentID resolves runtime environment for proxy mode.
+// For compatibility, when environmentId is missing (0), it falls back to default runtime environment.
+func (biz *InstanceBiz) resolveProxyEnvironmentID(ctx context.Context, requestedID int32) (int32, error) {
+	if requestedID > 0 {
+		return requestedID, nil
+	}
+
+	defaultName := "Default-Run-Environment"
+	if cfg := config.GetConfig(); cfg != nil && strings.TrimSpace(cfg.RunEnvironment.Name) != "" {
+		defaultName = strings.TrimSpace(cfg.RunEnvironment.Name)
+	}
+
+	if env, err := mysql.McpEnvironmentRepo.FindByName(ctx, defaultName); err == nil && env != nil {
+		return int32(env.ID), nil
+	}
+
+	environments, err := mysql.McpEnvironmentRepo.FindAll(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("query environments failed: %w", err)
+	}
+	if len(environments) == 0 {
+		return 0, fmt.Errorf("no available runtime environment found")
+	}
+
+	for _, env := range environments {
+		if env.Level == model.McpEnvironmentLevelSystem {
+			return int32(env.ID), nil
+		}
+	}
+
+	return int32(environments[0].ID), nil
 }
 
 // getContainerServiceURL 返回容器服务地址。

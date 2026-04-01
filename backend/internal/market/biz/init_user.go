@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/kymo-mcp/mcpcan/internal/authz/biz"
@@ -68,13 +69,17 @@ func (a *App) createAdminUser() (*model.SysUser, error) {
 	// Check if admin user already exists
 	existingUser, err := mysql.SysUserRepo.FindByUsername(ctx, *adminUser.Username)
 	if err == nil && existingUser != nil {
-		fmt.Println("Admin user already exists, updating password...")
-		// Update password
-		err = userBiz.SetUserPassword(ctx, existingUser, password)
-		if err != nil {
-			return nil, fmt.Errorf("failed to update admin password: %v", err)
+		passwordPolicy := strings.ToLower(strings.TrimSpace(initConfig.Init.AdminPasswordPolicy))
+		if passwordPolicy == config.InitAdminPasswordPolicyForceReset {
+			fmt.Println("Admin user already exists, resetting password by init policy...")
+			err = userBiz.SetUserPassword(ctx, existingUser, password)
+			if err != nil {
+				return nil, fmt.Errorf("failed to update admin password: %v", err)
+			}
+		} else {
+			fmt.Println("Admin user already exists, skip password reset by init policy.")
 		}
-		
+
 		// Ensure admin dept is created and linked
 		adminDept, _ = createAdminDept(ctx, adminDept)
 		if adminDept != nil {
@@ -83,7 +88,7 @@ func (a *App) createAdminUser() (*model.SysUser, error) {
 				_ = mysql.SysUserRepo.Update(ctx, existingUser)
 			}
 		}
-		
+
 		a.AdminUser = existingUser
 		return existingUser, nil
 	}

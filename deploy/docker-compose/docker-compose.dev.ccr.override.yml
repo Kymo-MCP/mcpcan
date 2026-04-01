@@ -1,0 +1,4 @@
+services:
+  mcp-market-svc:
+    environment:
+      - REGISTORY_IMAGE_MIRROR=ccr.ccs.tencentyun.com/itqm-private

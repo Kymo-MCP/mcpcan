@@ -212,6 +212,8 @@ services:
     loginUser:
       username: admin
       password: admin123
+    adminPasswordPolicy: create_only
+    menuSyncPolicy: add_only
 
 # =============================================================================
 # Ingress Configuration

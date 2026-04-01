@@ -57,6 +57,8 @@ All core parameters are defined in `.env`. After modifying, please rerun `./repl
 | `VERSION`         | System version tag                         |
 | `ADMIN_USERNAME`  | Initial admin username                     |
 | `ADMIN_PASSWORD`  | Initial admin password                     |
+| `INIT_ADMIN_PASSWORD_POLICY` | Admin password init policy (`create_only`/`force_reset`) |
+| `INIT_MENU_SYNC_POLICY` | Menu sync policy (`off`/`add_only`/`full_sync`) |
 
 ---
 

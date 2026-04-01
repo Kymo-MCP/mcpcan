@@ -1,15 +1,19 @@
+# Global settings
 global:
-  checkNewVersion: false
-  sendAnonymousUsage: false
+  checkNewVersion: false # Disable version check to avoid network requests at startup
+  sendAnonymousUsage: false # Disable anonymous statistics, do not send usage data to official
 
+# Traefik API and Dashboard Configuration
 api:
   dashboard: true
-  insecure: true
+  insecure: true # 允许通过 :8080 (映射到宿主机 8090) 直接访问 Dashboard
 
+# Entry points
 entryPoints:
   web:
-    address: ":80"
+    address: ":80" # HTTP Port 80
 
+# Dynamic configuration source
 providers:
   file:
     directory: "/etc/traefik/dynamic"
@@ -17,18 +21,21 @@ providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: docker-compose_mcpcan-network
+    # network: docker-compose_mcpcan-network
     allowEmptyServices: true
 
+# Log configuration, output to standard output (Docker logs)
 log:
   level: "INFO"
   format: "json"
-  filePath: "/dev/stdout"
+  filePath: "/dev/stdout" # Output to standard output (Docker logs)
 
+# Access log
 accessLog:
   format: "json"
   fields:
     headers:
+      # Core fix: Use defaultMode: keep to retain all Headers
       defaultMode: keep
       names:
-        X-Consum-User: keep
+        X-Consum-User: keep # Explicitly retain (although redundant in keep mode, it is for easier understanding)
