@@ -191,7 +191,7 @@ import { ElMessage } from 'element-plus'
 import MonacoEditor from '@/components/MonacoEditor/index.vue'
 import { useI18n } from 'vue-i18n'
 import type { InstanceResult } from '@/types/instance'
-import { InstanceStatus } from '@/types/instance'
+import { InstanceStatus, McpProtocol } from '@/types/instance'
 import { TokenAPI } from '@/api/mcp/instance'
 
 const { t } = useI18n()
@@ -366,19 +366,37 @@ const generateInstanceConfig = (instance: InstanceResult) => {
 
   const serverKey = `mcp-${instance.instanceId.slice(0, 8)}`
 
-  const serverConfig: any = {
-    url: fullUrl,
-    type: 'sse',
-    instanceId: instance.instanceId,
-    instanceName: instance.name || instance.instanceName,
+  const resolveServerType = () => {
+    const protocol = (instance as any).proxyProtocol || instance.mcpProtocol
+
+    if (protocol === McpProtocol.SSE || protocol === 1 || protocol === 'sse') {
+      return 'sse'
+    }
+
+    if (
+      protocol === McpProtocol.STREAMABLE_HTTP ||
+      protocol === 2 ||
+      protocol === 'streamable-http' ||
+      protocol === 'streamable_http'
+    ) {
+      return 'streamable_http'
+    }
+
+    const lowerUrl = fullUrl.toLowerCase()
+    if (lowerUrl.endsWith('/sse')) {
+      return 'sse'
+    }
+    if (lowerUrl.endsWith('/mcp')) {
+      return 'streamable_http'
+    }
+    return 'sse'
   }
 
-  if (instance.mcpProtocol === 1) {
-    serverConfig.type = 'sse'
-  } else if (instance.mcpProtocol === 2) {
-    serverConfig.type = 'streamable_http'
-  } else {
-    serverConfig.type = 'sse'
+  const serverConfig: any = {
+    url: fullUrl,
+    type: resolveServerType(),
+    instanceId: instance.instanceId,
+    instanceName: instance.name || instance.instanceName,
   }
 
   if (instance.enabledToken) {

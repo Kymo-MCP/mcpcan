@@ -124,6 +124,27 @@ func normalizeGatewayURLForContainer(rawURL string) string {
 	return parsedURL.String()
 }
 
+func inferTransportFromURL(rawURL string) string {
+	if strings.TrimSpace(rawURL) == "" {
+		return ""
+	}
+
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return ""
+	}
+
+	path := strings.TrimSuffix(strings.ToLower(parsedURL.Path), "/")
+	switch {
+	case strings.HasSuffix(path, "/mcp"):
+		return model.McpProtocolStreamableHttp.String()
+	case strings.HasSuffix(path, "/sse"):
+		return model.McpProtocolSSE.String()
+	default:
+		return ""
+	}
+}
+
 // initializeClient 初始化单个 MCP 客户端 (内部方法,调用者需持有锁)
 func (m *McpManager) initializeClient(ctx context.Context, name string, srv utils.McpServerConfig) error {
 	var mcpClient *client.Client
@@ -150,6 +171,11 @@ func (m *McpManager) initializeClient(ctx context.Context, name string, srv util
 
 	transportType = strings.ToLower(transportType)
 	transportType = strings.ReplaceAll(transportType, "_", "-") // Normalize snake_case to kebab-case if needed
+
+	if inferred := inferTransportFromURL(srv.URL); inferred != "" && transportType != "" && inferred != transportType {
+		fmt.Printf("[MCP Manager] transport corrected by url suffix, url=%s, from=%s, to=%s\n", srv.URL, transportType, inferred)
+		transportType = inferred
+	}
 
 	// 创建一个跳过证书验证的 HTTP Client 用于调试
 	insecureClient := &http.Client{
