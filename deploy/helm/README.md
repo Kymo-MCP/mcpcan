@@ -72,7 +72,7 @@ The following table lists the configurable parameters and their default values:
 | ------------------------ | ------------------------------------- | ------------------------------------- |
 | `global.domain`          | Domain name for the application       | `""`                                  |
 | `global.publicIP`        | Public IP address for external access | `"192.168.1.100"`                     |
-| `global.version`         | Application version tag               | `v2.1.3`            |
+| `global.version`         | Application version tag               | `v2.1.4`            |
 | `global.registry`        | Container registry URL                | `ccr.ccs.tencentyun.com/itqm-private` |
 | `global.imagePullPolicy` | Image pull policy                     | `Always`                              |
 | `global.appSecret`       | Application secret key                | `dev-app-secret`                      |
@@ -225,7 +225,7 @@ helm upgrade mcpcan ./helm/
 helm upgrade mcpcan ./helm/ -f new-values.yaml
 
 # Upgrade with specific version
-helm upgrade mcpcan ./helm/ --version v2.1.3
+helm upgrade mcpcan ./helm/ --version v2.1.4
 ```
 
 ### Rolling Updates
@@ -234,7 +234,7 @@ The chart supports rolling updates for all services. To update a specific servic
 
 ```bash
 # Update web service image
-helm upgrade mcpcan ./helm/ --set global.version=v2.1.3
+helm upgrade mcpcan ./helm/ --set global.version=v2.1.4
 
 # Update with zero downtime
 helm upgrade mcpcan ./helm/ --wait --timeout=600s
