@@ -18,6 +18,7 @@ import (
 	"github.com/kymo-mcp/mcpcan/pkg/container"
 	"github.com/kymo-mcp/mcpcan/pkg/database/model"
 	"github.com/kymo-mcp/mcpcan/pkg/database/repository/mysql"
+	"github.com/kymo-mcp/mcpcan/pkg/openapifile"
 	"github.com/kymo-mcp/mcpcan/pkg/redis"
 	"github.com/kymo-mcp/mcpcan/pkg/utils"
 	"github.com/mark3labs/mcp-go/client"
@@ -180,6 +181,9 @@ func (biz *InstanceBiz) CreateOpenapiInstance(ctx context.Context, req *instance
 	if chooseOpenapiFileInfo.BaseOpenapiFileID != req.OpenapiFileID {
 		return nil, fmt.Errorf("failed to get openapi file information")
 	}
+	if err := biz.validateOpenapiSpecFile(chooseOpenapiFileInfo.OpenapiFilePath); err != nil {
+		return nil, fmt.Errorf("openapi file validation failed: %w", err)
+	}
 
 	instanceID := uuid.New().String()
 	containerOptions, err := GContainerBiz.BuildOpenapiContainerOptions(ctx, instanceID, chooseOpenapiFileInfo.OpenapiFileID, common.GetMcpHostingPort(), 0, 0, req.OpenapiBaseUrl, req.Headers)
@@ -297,9 +301,6 @@ func (biz *InstanceBiz) createInstanceProxyMode(ctx context.Context, req *instan
 		return nil, fmt.Errorf("failed to resolve proxy runtime environment: %w", err)
 	}
 
-	// DEBUG: 临时日志，验证 EnvironmentId 接收值
-	fmt.Printf("[DEBUG] createInstanceProxyMode: req.EnvironmentId=%d, resolvedEnvironmentId=%d, mcpProtocol=%s\n", req.EnvironmentId, environmentID, mcpProtocol)
-
 	// Create new instance record
 	instance := &model.McpInstance{
 		InstanceID:      instanceID,
@@ -338,9 +339,6 @@ func (biz *InstanceBiz) createInstanceProxyMode(ctx context.Context, req *instan
 		instance.ContainerServiceName = options.ServiceName
 		instance.ContainerServiceURL = biz.getProxyContainerServiceURL(ctx, uint(environmentID), options.ContainerName, options.ServiceName)
 		instance.EnvironmentID = uint(environmentID)
-		// 路由协议转换为 SSE (经 sidecar 重写)
-		instance.ProxyProtocol = model.McpProtocolSSE
-		instance.PublicProxyPath = biz.CreatePublicProxyPath(instanceID, model.McpProtocolSSE)
 	}
 
 	tokensToSave := biz.buildCreateTokens(instanceID, req.EnabledToken, req.Tokens)
@@ -1072,11 +1070,15 @@ func (biz *InstanceBiz) UpdateInstanceForProxy(ctx context.Context, req *instanc
 	if err != nil {
 		return nil, fmt.Errorf("failed to validate mcp servers: %w", err)
 	}
+	// 无论上游配置是否变化，代理对外协议都应与当前配置声明保持一致，避免历史脏数据导致 /sse 与 /mcp 错配
+	targetProxyProtocol := model.McpProtocol(reqMcpResult.ProtocolType)
+	targetPublicProxyPath := biz.CreatePublicProxyPath(oriInstance.InstanceID, targetProxyProtocol)
+	oriInstance.ProxyProtocol = targetProxyProtocol
+	oriInstance.PublicProxyPath = targetPublicProxyPath
+
 	if !utils.CompareMcpValidationResult(reqMcpResult, oriMcpResult) {
 		sourceConfig := json.RawMessage([]byte(req.McpServers))
 		oriInstance.SourceConfig = sourceConfig
-		oriInstance.ProxyProtocol = model.McpProtocol(reqMcpResult.ProtocolType)
-		oriInstance.PublicProxyPath = biz.CreatePublicProxyPath(oriInstance.InstanceID, oriInstance.ProxyProtocol)
 
 		// 如果实例配置了运行环境，当发生上游基础信息变更时，需要同步重建对应的代理 Sidecar 容器
 		if oriInstance.EnvironmentID > 0 {
@@ -1138,6 +1140,9 @@ func (biz *InstanceBiz) UpdateInstanceForOpenapi(ctx context.Context, req *insta
 	}
 	if chooseOpenapiFileInfo.BaseOpenapiFileID != req.OpenapiFileID {
 		return nil, fmt.Errorf("failed to get openapi file information")
+	}
+	if err := biz.validateOpenapiSpecFile(chooseOpenapiFileInfo.OpenapiFilePath); err != nil {
+		return nil, fmt.Errorf("openapi file validation failed: %w", err)
 	}
 
 	// 判断 API 相关字段是否变化（URL、headers、openapi 文件）
@@ -1358,6 +1363,11 @@ func (biz *InstanceBiz) UpdateInstanceForHosting(ctx context.Context, req *insta
 		Status:      string(model.InstanceStatusActive),
 	}
 	return resp, nil
+}
+
+func (biz *InstanceBiz) validateOpenapiSpecFile(openapiFilePath string) error {
+	manager := openapifile.NewOpenapiFileManager(&config.GlobalConfig.Code, config.GlobalConfig.Storage.OpenapiFilePath)
+	return manager.ValidateOpenapiFile(openapiFilePath)
 }
 
 // GetInstancesByEnvironmentID gets instance list by environment ID

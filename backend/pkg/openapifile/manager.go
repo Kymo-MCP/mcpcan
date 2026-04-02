@@ -1,6 +1,7 @@
 package openapifile
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 )
 
 // OpenapiFileManager manages OpenAPI files.
@@ -320,8 +322,82 @@ func (m *OpenapiFileManager) ValidateOpenapiFile(filePath string) error {
 		}
 	}
 
+	doc, err := parseOpenapiDocument(content, ext)
+	if err != nil {
+		return fmt.Errorf("failed to parse OpenAPI document: %w", err)
+	}
+	if err := validateOpenapiSecuritySchemes(doc); err != nil {
+		return err
+	}
+
 	logger.Info("OpenAPI file validation passed", zap.String("path", absFilePath))
 	return nil
+}
+
+func parseOpenapiDocument(content []byte, ext string) (map[string]interface{}, error) {
+	var doc map[string]interface{}
+	switch ext {
+	case ".json":
+		if err := json.Unmarshal(content, &doc); err != nil {
+			return nil, err
+		}
+	case ".yaml", ".yml":
+		if err := yaml.Unmarshal(content, &doc); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unsupported OpenAPI file extension: %s", ext)
+	}
+
+	if len(doc) == 0 {
+		return nil, fmt.Errorf("OpenAPI document is empty")
+	}
+	return doc, nil
+}
+
+func validateOpenapiSecuritySchemes(doc map[string]interface{}) error {
+	components, ok := toStringMap(doc["components"])
+	if !ok {
+		return nil
+	}
+	securitySchemes, ok := toStringMap(components["securitySchemes"])
+	if !ok {
+		return nil
+	}
+
+	for schemeName, rawScheme := range securitySchemes {
+		scheme, ok := toStringMap(rawScheme)
+		if !ok {
+			continue
+		}
+		schemeType, _ := scheme["type"].(string)
+		if strings.EqualFold(strings.TrimSpace(schemeType), "http") {
+			if _, hasIn := scheme["in"]; hasIn {
+				return fmt.Errorf("invalid components: security scheme %q: security scheme of type %q can't have 'in'", schemeName, "http")
+			}
+		}
+	}
+
+	return nil
+}
+
+func toStringMap(v interface{}) (map[string]interface{}, bool) {
+	switch m := v.(type) {
+	case map[string]interface{}:
+		return m, true
+	case map[interface{}]interface{}:
+		converted := make(map[string]interface{}, len(m))
+		for k, value := range m {
+			key, ok := k.(string)
+			if !ok {
+				continue
+			}
+			converted[key] = value
+		}
+		return converted, true
+	default:
+		return nil, false
+	}
 }
 
 // GetFileInfo retrieves information about an OpenAPI file

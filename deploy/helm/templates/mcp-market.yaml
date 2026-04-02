@@ -58,6 +58,8 @@ spec:
         env:
         - name: REGISTORY_IMAGE_MIRROR
           value: {{ .Values.global.registry }}
+        - name: OPENAPI_TO_MCP_IMAGE
+          value: {{ .Values.global.registry }}/{{ .Values.global.images.openapiToMcp }}
         - name: CODE_MODE
           value: {{ .Values.global.codeMode | default "OpenCode" }}
         {{- if .Values.services.market.resources }}

@@ -163,10 +163,13 @@ func GetSidecarImage() string {
 	return GetImage("mcp-sidecar:latest")
 }
 
-// openapi-to-mcp image 77kymo/openapi-to-mcp:latest
+// openapi-to-mcp image default: 77kymo/openapi-to-mcp:v0.2.7
 // GetOpenapiToMcpImage returns openapi-to-mcp image
 func GetOpenapiToMcpImage() string {
-	return GetImage("openapi-to-mcp:latest")
+	if image := strings.TrimSpace(os.Getenv("OPENAPI_TO_MCP_IMAGE")); image != "" {
+		return image
+	}
+	return GetImage("openapi-to-mcp:v0.2.7")
 }
 
 // GetSidecarPort returns sidecar port from env or default 61180
