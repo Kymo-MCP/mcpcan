@@ -36,6 +36,7 @@ const (
 	// 聚合 / 代理
 	ProviderOpenRouter = orig_llm.ProviderOpenRouter
 	ProviderLiteLLM    = orig_llm.ProviderLiteLLM
+	ProviderMoyuAI     = orig_llm.ProviderMoyuAI
 	ProviderOllama     = orig_llm.ProviderOllama
 	// 国内主流
 	ProviderQwen     = orig_llm.ProviderQwen
@@ -68,18 +69,18 @@ func IsValidProvider(provider string) bool {
 // ——— 消息/请求/响应 类型别名（直接复用底层，zero copy）———
 
 type (
-	ProviderConfig      = orig_llm.ProviderConfig
-	MessageContentPart  = orig_llm.MessageContentPart
-	MessageImageURL     = orig_llm.MessageImageURL
-	Message             = orig_llm.Message
-	ToolCall            = orig_llm.ToolCall
-	ToolCallFunction    = orig_llm.ToolCallFunction
-	Tool                = orig_llm.Tool
-	Function            = orig_llm.Function
-	ChatRequest         = orig_llm.ChatRequest
-	ToolOutput          = orig_llm.ToolOutput
-	StreamResponse      = orig_llm.StreamResponse
-	Usage               = orig_llm.Usage
+	ProviderConfig     = orig_llm.ProviderConfig
+	MessageContentPart = orig_llm.MessageContentPart
+	MessageImageURL    = orig_llm.MessageImageURL
+	Message            = orig_llm.Message
+	ToolCall           = orig_llm.ToolCall
+	ToolCallFunction   = orig_llm.ToolCallFunction
+	Tool               = orig_llm.Tool
+	Function           = orig_llm.Function
+	ChatRequest        = orig_llm.ChatRequest
+	ToolOutput         = orig_llm.ToolOutput
+	StreamResponse     = orig_llm.StreamResponse
+	Usage              = orig_llm.Usage
 )
 
 // ExtraContent 辅助类型（json 原始消息，与底层保持一致）

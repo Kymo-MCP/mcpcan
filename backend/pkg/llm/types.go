@@ -29,6 +29,7 @@ const (
 	// 聚合 / 代理 Providers
 	ProviderOpenRouter ProviderType = "openrouter"
 	ProviderLiteLLM    ProviderType = "litellm"
+	ProviderMoyuAI     ProviderType = "moyu_ai"
 	ProviderOllama     ProviderType = "ollama"
 
 	// 国内主流 Providers
@@ -48,31 +49,32 @@ const (
 
 // SupportedProviders contains all valid provider types
 var SupportedProviders = map[ProviderType]bool{
-	ProviderOpenAI:      true,
-	ProviderAzureOpenAI: true,
-	ProviderDeepSeek:    true,
-	ProviderAnthropic:   true,
-	ProviderGoogle:      true,
-	ProviderMistral:     true,
-	ProviderXAI:         true,
+	ProviderOpenAI:       true,
+	ProviderAzureOpenAI:  true,
+	ProviderDeepSeek:     true,
+	ProviderAnthropic:    true,
+	ProviderGoogle:       true,
+	ProviderMistral:      true,
+	ProviderXAI:          true,
 	ProviderAzureBedrock: true,
-	ProviderVertexAI:    true,
-	ProviderMetaLlama:   true,
-	ProviderCohere:      true,
-	ProviderPerplexity:  true,
-	ProviderOpenRouter:  true,
-	ProviderLiteLLM:     true,
-	ProviderOllama:      true,
-	ProviderQwen:        true,
-	ProviderDoubao:      true,
-	ProviderZhipu:       true,
-	ProviderMoonshot:    true,
-	ProviderBaidu:       true,
-	ProviderHunyuan:     true,
-	ProviderSpark:       true,
-	ProviderMiniMax:     true,
-	ProviderYi01AI:      true,
-	ProviderMCP:         true,
+	ProviderVertexAI:     true,
+	ProviderMetaLlama:    true,
+	ProviderCohere:       true,
+	ProviderPerplexity:   true,
+	ProviderOpenRouter:   true,
+	ProviderLiteLLM:      true,
+	ProviderMoyuAI:       true,
+	ProviderOllama:       true,
+	ProviderQwen:         true,
+	ProviderDoubao:       true,
+	ProviderZhipu:        true,
+	ProviderMoonshot:     true,
+	ProviderBaidu:        true,
+	ProviderHunyuan:      true,
+	ProviderSpark:        true,
+	ProviderMiniMax:      true,
+	ProviderYi01AI:       true,
+	ProviderMCP:          true,
 }
 
 // DefaultBaseURLs contains default API endpoints for each provider.
@@ -92,7 +94,6 @@ func init() {
 	}
 }
 
-
 // GetSupportedProviderList returns list of all supported provider IDs
 func GetSupportedProviderList() []string {
 	return []string{
@@ -107,6 +108,7 @@ func GetSupportedProviderList() []string {
 		string(ProviderPerplexity),
 		string(ProviderOpenRouter),
 		string(ProviderLiteLLM),
+		string(ProviderMoyuAI),
 		string(ProviderOllama),
 		string(ProviderQwen),
 		string(ProviderDoubao),
@@ -152,7 +154,7 @@ type Message struct {
 	MultiContent     []MessageContentPart `json:"multi_content,omitempty"`
 	ToolCalls        []ToolCall           `json:"tool_calls,omitempty"`
 	ToolCallID       string               `json:"tool_call_id,omitempty"`
-	ToolCallName     string               `json:"tool_call_name,omitempty"` // Google FunctionResponse 需要函数名
+	ToolCallName     string               `json:"tool_call_name,omitempty"`    // Google FunctionResponse 需要函数名
 	ReasoningContent string               `json:"reasoning_content,omitempty"` // 思考过程 (DeepSeek/Kimi)
 }
 

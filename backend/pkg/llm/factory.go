@@ -21,7 +21,6 @@ func NewProvider(typ ProviderType, config ProviderConfig) (Provider, error) {
 	var err error
 	// ctx := context.Background()
 
-
 	// Create shared HTTP Client with Proxy if configured
 	var baseTransport http.RoundTripper = http.DefaultTransport
 	if config.ProxyURL != "" {
@@ -59,7 +58,7 @@ func NewProvider(typ ProviderType, config ProviderConfig) (Provider, error) {
 	}
 
 	switch typ {
-	case ProviderOpenAI, ProviderDeepSeek, ProviderMoonshot, ProviderQwen, ProviderDoubao, ProviderZhipu, ProviderXAI, ProviderMistral, ProviderOpenRouter, ProviderLiteLLM, ProviderAzureOpenAI,
+	case ProviderOpenAI, ProviderDeepSeek, ProviderMoonshot, ProviderQwen, ProviderDoubao, ProviderZhipu, ProviderXAI, ProviderMistral, ProviderOpenRouter, ProviderLiteLLM, ProviderMoyuAI, ProviderAzureOpenAI,
 		// 新增国内厂商（都兼容 OpenAI Chat Completions 接口）
 		ProviderBaidu, ProviderHunyuan, ProviderSpark, ProviderMiniMax, ProviderYi01AI,
 		// 新增国际厂商（OpenAI 兼容接口）
@@ -99,7 +98,7 @@ func NewProvider(typ ProviderType, config ProviderConfig) (Provider, error) {
 	// 	if baseURL == "" {
 	// 		baseURL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 	// 	}
-		
+
 	// 	httpClient := &http.Client{
 	// 		Transport: baseTransport,
 	// 	}
@@ -148,7 +147,7 @@ func (t *headerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for k, v := range t.headers {
 		req.Header.Set(k, v)
 	}
-	
+
 	// Debug logging
 	// Avoid logging API Key
 	logHeaders := make(http.Header)
@@ -171,11 +170,9 @@ func (t *headerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		// Restore body
 		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-		
+
 		log.Printf("[OpenRouter Error] Status: %d, Body: %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	return resp, nil
 }
-
-

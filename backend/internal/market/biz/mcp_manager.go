@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -69,6 +71,10 @@ func (m *McpManager) Initialize(ctx context.Context, configJSON string) error {
 
 	successCount := 0
 	for name, srv := range config.McpServers {
+		// 容器内访问 MCP 网关时，将前端可见地址统一替换为内部入口地址
+		// 仅对 /mcp-gateway/* 路径生效，避免影响 DIRECT 外部地址。
+		srv.URL = normalizeGatewayURLForContainer(srv.URL)
+
 		// 存储配置用于后续重连
 		m.configs[name] = srv
 
@@ -92,6 +98,32 @@ func (m *McpManager) Initialize(ctx context.Context, configJSON string) error {
 	return nil
 }
 
+func normalizeGatewayURLForContainer(rawURL string) string {
+	internalBase := strings.TrimSpace(os.Getenv("MCP_INTERNAL_BASE_URL"))
+	if rawURL == "" || internalBase == "" {
+		return rawURL
+	}
+
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL
+	}
+
+	// 仅处理 MCP 网关路由，避免影响直连外部 URL
+	if !strings.HasPrefix(parsedURL.Path, "/mcp-gateway/") {
+		return rawURL
+	}
+
+	internalURL, err := url.Parse(internalBase)
+	if err != nil || internalURL.Scheme == "" || internalURL.Host == "" {
+		return rawURL
+	}
+
+	parsedURL.Scheme = internalURL.Scheme
+	parsedURL.Host = internalURL.Host
+	return parsedURL.String()
+}
+
 // initializeClient 初始化单个 MCP 客户端 (内部方法,调用者需持有锁)
 func (m *McpManager) initializeClient(ctx context.Context, name string, srv utils.McpServerConfig) error {
 	var mcpClient *client.Client
@@ -102,7 +134,7 @@ func (m *McpManager) initializeClient(ctx context.Context, name string, srv util
 	if transportType == "" {
 		transportType = srv.Type
 	}
-	
+
 	// Auto-detect if not specified
 	if transportType == "" {
 		if srv.URL != "" {
@@ -202,10 +234,13 @@ func sanitizeServerName(name string) string {
 
 func (m *McpManager) GetTools(ctx context.Context) ([]llm.Tool, error) {
 	var allTools []llm.Tool
+	var listErrs []string
+
 	for name, c := range m.clients {
 		resp, err := c.ListTools(ctx, mcp.ListToolsRequest{})
 		if err != nil {
-			return nil, fmt.Errorf("failed to list tools for %s: %v", name, err)
+			listErrs = append(listErrs, fmt.Sprintf("%s: %v", name, err))
+			continue
 		}
 
 		safeName := sanitizeServerName(name)
@@ -223,12 +258,12 @@ func (m *McpManager) GetTools(ctx context.Context) ([]llm.Tool, error) {
 					props = make(map[string]interface{})
 					schemaMap["properties"] = props
 				}
-				
+
 				// 如果 properties 为空，Google API 可能会拒绝（Error 400）。
 				// Hack: 添加一个 _ignore 字段以满足 "properties map cannot be empty"
 				if len(props) == 0 {
 					props["_ignore"] = map[string]interface{}{
-						"type": "string",
+						"type":        "string",
 						"description": "Ignored field to satisfy API requirements for empty parameters.",
 					}
 					schemaMap["properties"] = props // 更新回去
@@ -240,7 +275,7 @@ func (m *McpManager) GetTools(ctx context.Context) ([]llm.Tool, error) {
 				}
 				schemaBytes, _ = json.Marshal(schemaMap)
 			}
-			
+
 			llmTool := llm.Tool{
 				Type: "function",
 				Function: llm.Function{
@@ -252,6 +287,19 @@ func (m *McpManager) GetTools(ctx context.Context) ([]llm.Tool, error) {
 			allTools = append(allTools, llmTool)
 		}
 	}
+
+	// 部分失败容错：只要还有可用工具就继续返回，避免单个 server 异常导致 tools 全量丢失
+	if len(allTools) > 0 {
+		if len(listErrs) > 0 {
+			fmt.Printf("[MCP Manager] list tools partial success, errors=%s\n", strings.Join(listErrs, " | "))
+		}
+		return allTools, nil
+	}
+
+	if len(listErrs) > 0 {
+		return nil, fmt.Errorf("failed to list tools from all mcp servers: %s", strings.Join(listErrs, " | "))
+	}
+
 	return allTools, nil
 }
 
@@ -303,4 +351,3 @@ func (m *McpManager) CallTool(ctx context.Context, name string, args string) (*m
 		},
 	})
 }
-
