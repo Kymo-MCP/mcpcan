@@ -83,7 +83,8 @@ import { useMcpStoreHook } from '@/stores'
 
 const { t, locale } = useI18n()
 const { query, pageInfo, jumpToPage } = useInstanceFormHooks()
-const { currentInstance } = toRefs(useMcpStoreHook())
+const { currentInstance, envList } = toRefs(useMcpStoreHook())
+const { handleGetEnvList } = useMcpStoreHook()
 const baseInfo = ref()
 const protocolOptions = [
   { label: 'SSE', value: 1 },
@@ -123,6 +124,14 @@ const handleConfirm = async () => {
     if (valid) {
       try {
         pageInfo.value.loading = true
+        if (!pageInfo.value.formData.environmentId) {
+          await handleGetEnvList()
+          pageInfo.value.formData.environmentId = envList.value[0]?.id || ''
+        }
+        if (!pageInfo.value.formData.environmentId) {
+          ElMessage.warning(t('mcp.template.rules.environmentId'))
+          return
+        }
         if (Array.isArray(pageInfo.value.formData.headers)) {
           pageInfo.value.formData.headers = Object.fromEntries(
             pageInfo.value.formData.headers
@@ -183,7 +192,8 @@ const handleSaveAsTemplate = async () => {
     pageInfo.value.loading = false
   }
 }
-const init = (instance: InstanceResult | null) => {
+const init = async (instance: InstanceResult | null) => {
+  await handleGetEnvList()
   if (instance) {
     pageInfo.value.formData = cloneDeep(instance)
   } else {
@@ -191,6 +201,9 @@ const init = (instance: InstanceResult | null) => {
   }
   nextTick(() => {
     pageInfo.value.formData.accessType = AccessType.PROXY
+    if (!pageInfo.value.formData.environmentId) {
+      pageInfo.value.formData.environmentId = envList.value[0]?.id || ''
+    }
   })
 }
 defineExpose({

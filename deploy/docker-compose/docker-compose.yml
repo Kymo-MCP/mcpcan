@@ -114,6 +114,9 @@ services:
     image: ${REGISTRY_PREFIX}/mcp-market:${VERSION}
     container_name: ${MCP_MARKET_SERVICE_NAME}
     restart: always
+    environment:
+      - REGISTORY_IMAGE_MIRROR=${REGISTRY_PREFIX}
+      - OPENAPI_TO_MCP_IMAGE=${REGISTRY_PREFIX}/openapi-to-mcp:v0.2.7
     volumes:
       - ./config/market.yaml:/app/config/market.yaml
       - ${HOST_DATA_PATH}:/data/mcpcan

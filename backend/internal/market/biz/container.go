@@ -696,7 +696,6 @@ func (cd *ContainerBiz) RestartContainer(ctx context.Context, instance *model.Mc
 		}
 	}
 
-
 	// Ensure container name is consistent with instance
 	containerOptions.ContainerName = instance.ContainerName
 
@@ -958,7 +957,6 @@ func (cd *ContainerBiz) BuildContainerOptions(ctx context.Context, instanceID st
 	// 默认禁用主容器的 Traefik 直接发现（由 Sidecar 代劳）
 	labels["traefik.enable"] = "false"
 
-
 	// 使用 embed 模板生成 agentgateway sidecar 配置
 	// 8. Build container creation options
 	containerOptions := container.ContainerCreateOptions{
@@ -983,7 +981,7 @@ func (cd *ContainerBiz) BuildContainerOptions(ctx context.Context, instanceID st
 				"MCP_ROUTE_PREFIX": instancePath,
 				"PORT":             fmt.Sprintf("%d", common.GetSidecarPort()),
 			},
-			Labels:        traefikLabels,
+			Labels: traefikLabels,
 		},
 	}
 
@@ -1105,7 +1103,6 @@ exec /app/init/startup.sh
 		},
 	}
 
-
 	return &containerOptions, nil
 }
 
@@ -1149,7 +1146,7 @@ func (cd *ContainerBiz) BuildProxySidecarOptions(ctx context.Context, instanceID
 	routerName := fmt.Sprintf("mcp-inst-%s", instanceID)
 
 	labels["traefik.enable"] = "true"
-	
+
 	// 动态添加针对该实例前缀的 StripPrefix 中间件
 	stripMiddleware := fmt.Sprintf("%s-strip", routerName)
 	labels[fmt.Sprintf("traefik.http.middlewares.%s.stripprefix.prefixes", stripMiddleware)] = instancePath
@@ -1165,27 +1162,21 @@ func (cd *ContainerBiz) BuildProxySidecarOptions(ctx context.Context, instanceID
 	labels[fmt.Sprintf("traefik.http.routers.%s.service", routerName)] = containerName
 	labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", containerName)] = fmt.Sprintf("%d", common.GetSidecarPort())
 
-	// 使用 embed 模板生成 agentgateway sidecar 配置（Proxy 模式）
-	// 模板基于已验证的 proxy-test.yaml 格式（无 protocol/match 字段，使用 sse 拆分字段）
-	agentGatewayYAML := buildSidecarConfig(sidecarProxyTemplate, map[string]string{
-		"{{INSTANCE_PATH}}": instancePath,
-		"{{REMOTE_HOST}}": host,
-		"REMOTE_PORT_PLACEHOLDER": portStr,
-		"{{REMOTE_PATH}}": path,
-		"{{REMOTE_SCHEME}}": u.Scheme,
-	})
+	targetURL := fmt.Sprintf("%s://%s:%s%s", u.Scheme, host, portStr, path)
 
 	containerOptions := container.ContainerCreateOptions{
 		ImageName:     common.GetSidecarImage(),
 		ContainerName: containerName,
 		ServiceName:   serviceName,
 		Port:          common.GetSidecarPort(), // 容器内部监听 80
-		// 容器内部自带 Entrypoint，此处使用 -f 加载下发的配置文件
-		CommandArgs:   []string{"-f", "/ag-config.yaml"},
 		RestartPolicy: "Always",
 		Labels:        labels,
-		EnvVars:       map[string]string{"RUST_LOG": "debug"},
-		ConfigContent: agentGatewayYAML,
+		EnvVars: map[string]string{
+			"MCP_TARGET_URL":   targetURL,
+			"MCP_ROUTE_PREFIX": instancePath,
+			"PORT":             fmt.Sprintf("%d", common.GetSidecarPort()),
+			"RUST_LOG":         "debug",
+		},
 	}
 
 	return &containerOptions, nil

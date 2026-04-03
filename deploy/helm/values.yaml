@@ -14,7 +14,7 @@ global:
   domain: ""
 
   # Application version tag
-  version: v2.1.3
+  version: v2.1.4
 
   # Container registry for all images (unified: itqm-private CCR is accessible from CN servers)
   registry: ccr.ccs.tencentyun.com/itqm-private
@@ -46,12 +46,12 @@ global:
     mysql: "mysql:8.0.30"
     redis: "redis:6-alpine"
     mcpEntry: "mcp-entry:v3.5"
-    mcpHosting: "mcp-hosting:v4"
+    mcpHosting: "mcp-hosting:v7"
     openapiToMcp: "openapi-to-mcp:v0.2.7"
     # 自研业务镜像：走 77kymo (Docker Hub)
-    mcpMarket: "mcp-market:v2.1.3"
-    mcpAuthz: "mcp-authz:v2.1.3"
-    mcpWeb: "mcp-web:v2.1.3"
+    mcpMarket: "mcp-market:v2.1.4"
+    mcpAuthz: "mcp-authz:v2.1.4"
+    mcpWeb: "mcp-web:v2.1.4"
 
   # Application secret key
   appSecret: "MrKuvLNn0hc1kHRbA6EqjSPj1ecrbPDE"
@@ -212,6 +212,8 @@ services:
     loginUser:
       username: admin
       password: admin123
+    adminPasswordPolicy: create_only
+    menuSyncPolicy: add_only
 
 # =============================================================================
 # Ingress Configuration

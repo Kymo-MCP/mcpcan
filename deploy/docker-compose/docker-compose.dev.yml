@@ -73,6 +73,8 @@ services:
       - GO111MODULE=on
       - CODE_MODE=EnterpriseCode
       - MCP_INTERNAL_BASE_URL=http://mcp-entry-svc
+      - REGISTORY_IMAGE_MIRROR=${REGISTRY_PREFIX:-77kymo}
+      - OPENAPI_TO_MCP_IMAGE=${REGISTRY_PREFIX:-77kymo}/openapi-to-mcp:v0.2.7
     ports:
       - "8080:8080"
       - "12345:2345"

@@ -1,0 +1,5 @@
+services:
+  mcp-market-svc:
+    environment:
+      - REGISTORY_IMAGE_MIRROR=ccr.ccs.tencentyun.com/itqm-private
+      - OPENAPI_TO_MCP_IMAGE=ccr.ccs.tencentyun.com/itqm-private/openapi-to-mcp:v0.2.7

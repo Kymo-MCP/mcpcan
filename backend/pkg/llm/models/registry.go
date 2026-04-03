@@ -29,6 +29,7 @@ var AllProviders = []ProviderInfo{
 	OpenRouterProvider,
 	OllamaProvider,
 	LiteLLMProvider,
+	MoyuAIProvider,
 }
 
 // GetProviderByID 根据 ID 获取提供商信息

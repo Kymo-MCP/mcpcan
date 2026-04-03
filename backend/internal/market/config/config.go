@@ -44,6 +44,8 @@ type Config struct {
 type InitUserConfig struct {
 	AdminUsername        string `mapstructure:"admin_username"`
 	AdminPassword        string `mapstructure:"admin_password"`
+	AdminPasswordPolicy  string `mapstructure:"admin_password_policy"`
+	MenuSyncPolicy       string `mapstructure:"menu_sync_policy"`
 	AdminNickname        string `mapstructure:"admin_nickname"`
 	AdminRoleName        string `mapstructure:"admin_role_name"`
 	AdminRoleDescription string `mapstructure:"admin_role_description"`
@@ -51,6 +53,15 @@ type InitUserConfig struct {
 	AdminDataScope       string `mapstructure:"admin_data_scope"`
 	AdminDeptName        string `mapstructure:"admin_dept_name"`
 }
+
+const (
+	InitAdminPasswordPolicyCreateOnly = "create_only"
+	InitAdminPasswordPolicyForceReset = "force_reset"
+
+	InitMenuSyncPolicyOff      = "off"
+	InitMenuSyncPolicyAddOnly  = "add_only"
+	InitMenuSyncPolicyFullSync = "full_sync"
+)
 
 var serviceName = "market"
 var cfgFileName = "market.yaml"
@@ -127,6 +138,22 @@ func Load() (*Config, error) {
 		config.Storage.OpenapiFilePath = "/app/data/openapi-file"
 	}
 	utils.MkdirP(config.Storage.OpenapiFilePath)
+
+	// Init policy defaults (safe for upgrade)
+	switch strings.ToLower(strings.TrimSpace(config.Init.AdminPasswordPolicy)) {
+	case InitAdminPasswordPolicyForceReset:
+		config.Init.AdminPasswordPolicy = InitAdminPasswordPolicyForceReset
+	default:
+		config.Init.AdminPasswordPolicy = InitAdminPasswordPolicyCreateOnly
+	}
+	switch strings.ToLower(strings.TrimSpace(config.Init.MenuSyncPolicy)) {
+	case InitMenuSyncPolicyOff:
+		config.Init.MenuSyncPolicy = InitMenuSyncPolicyOff
+	case InitMenuSyncPolicyFullSync:
+		config.Init.MenuSyncPolicy = InitMenuSyncPolicyFullSync
+	default:
+		config.Init.MenuSyncPolicy = InitMenuSyncPolicyAddOnly
+	}
 
 	// Set sensible defaults
 	if config.DemoMaxInstances <= 0 {

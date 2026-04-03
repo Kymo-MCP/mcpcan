@@ -392,5 +392,27 @@ var LiteLLMProvider = ProviderInfo{
 	Models:      []ModelInfo{}, // 通过 LiteLLM 代理的模型，动态获取
 }
 
+var MoyuAIProvider = ProviderInfo{
+	ID:          "moyu_ai",
+	Name:        "魔芋AI (New-API)",
+	IconURL:     "https://www.moyu.info/logo.png?v=2&_t=493083",
+	BaseURL:     "https://www.moyu.info/v1",
+	RegisterURL: "https://www.moyu.info",
+	DocsURL:     "http://101.200.167.88:8003/",
+	Models: []ModelInfo{
+		// 默认展示前 10 个模型（用于快速接入验证，实际可按账号权限调整）
+		{ID: "chatgpt-4o-latest", Name: "ChatGPT-4o Latest", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "gpt-4o", Name: "GPT-4o", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "gpt-4o-mini", Name: "GPT-4o Mini", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "gpt-4.1-mini", Name: "GPT-4.1 Mini", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "claude-opus-4-6", Name: "Claude Opus 4.6", ContextLength: 200000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "deepseek-v3", Name: "DeepSeek V3", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "deepseek-r1", Name: "DeepSeek R1", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, SupportThinking: true, Provider: "moyu_ai"},
+		{ID: "qwen-max", Name: "Qwen Max", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "doubao-seedream-4-5-251128", Name: "Doubao Seedream 4.5", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+		{ID: "doubao-seedance-1-5-pro-251215", Name: "Doubao Seedance 1.5 Pro", ContextLength: 128000, SupportTools: true, SupportSystemPrompt: true, SupportTemperature: true, Provider: "moyu_ai"},
+	},
+}
+
 // GoogleProvider 保留向后兼容（映射到 vertex_ai）
 var GoogleProvider = GoogleVertexProvider

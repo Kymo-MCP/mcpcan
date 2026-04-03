@@ -4,12 +4,20 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
+	"github.com/kymo-mcp/mcpcan/internal/market/config"
 	"github.com/kymo-mcp/mcpcan/pkg/database/model"
 	"github.com/kymo-mcp/mcpcan/pkg/database/repository/mysql"
 	"github.com/kymo-mcp/mcpcan/pkg/menu"
 )
 
 func (a *App) createAdminRoleMenus(adminUser *model.SysUser) error {
+	menuSyncPolicy := strings.ToLower(strings.TrimSpace(a.config.Init.MenuSyncPolicy))
+	if menuSyncPolicy == config.InitMenuSyncPolicyOff {
+		fmt.Println("Menu sync is disabled by init policy, skipping admin menu sync.")
+		return nil
+	}
+
 	existingRole, err := mysql.SysRoleRepo.FindByName(context.Background(), adminUser.GetUsername())
 	if err != nil {
 		return err
@@ -39,7 +47,10 @@ func (a *App) createAdminRoleMenus(adminUser *model.SysUser) error {
 		return fmt.Errorf("failed to find add menu: %w", err)
 	}
 
-	dbMenusToDelete := findDeleteMenu(context.Background(), menus, mcpcanMenus)
+	dbMenusToDelete := make([]*model.SysMenu, 0)
+	if menuSyncPolicy == config.InitMenuSyncPolicyFullSync {
+		dbMenusToDelete = findDeleteMenu(context.Background(), menus, mcpcanMenus)
+	}
 
 	var menuIds []int64
 	for _, dbMenuDelete := range dbMenusToDelete {
@@ -63,20 +74,22 @@ func (a *App) createAdminRoleMenus(adminUser *model.SysUser) error {
 		}
 	}
 
-	for _, m := range menuChildToList(menus) {
-		dbMenu, err := mysql.SysMenuRepo.FindByPermission(context.Background(), m.Permission)
-		if err != nil {
-			continue
-		}
-		if dbMenu.GetPath() != m.Path || dbMenu.GetEngTitle() != m.EngTitle ||
-			dbMenu.GetTitle() != m.Title || dbMenu.GetMenuSort() != int64(m.Sort) {
-			dbMenu.Title = &m.Title
-			dbMenu.EngTitle = &m.EngTitle
-			dbMenu.MenuSort = &m.Sort
-			dbMenu.Path = &m.Path
-			err := mysql.SysMenuRepo.Update(context.Background(), dbMenu)
+	if menuSyncPolicy == config.InitMenuSyncPolicyFullSync {
+		for _, m := range menuChildToList(menus) {
+			dbMenu, err := mysql.SysMenuRepo.FindByPermission(context.Background(), m.Permission)
 			if err != nil {
-				return fmt.Errorf("failed to update menu: %w", err)
+				continue
+			}
+			if dbMenu.GetPath() != m.Path || dbMenu.GetEngTitle() != m.EngTitle ||
+				dbMenu.GetTitle() != m.Title || dbMenu.GetMenuSort() != int64(m.Sort) {
+				dbMenu.Title = &m.Title
+				dbMenu.EngTitle = &m.EngTitle
+				dbMenu.MenuSort = &m.Sort
+				dbMenu.Path = &m.Path
+				err := mysql.SysMenuRepo.Update(context.Background(), dbMenu)
+				if err != nil {
+					return fmt.Errorf("failed to update menu: %w", err)
+				}
 			}
 		}
 	}

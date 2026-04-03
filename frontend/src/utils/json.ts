@@ -65,6 +65,25 @@ export const JsonFormatter = {
 }
 
 // 简化版核心逻辑（模拟 APIfox 解析过程）
+const HTTP_METHODS = new Set([
+  'get',
+  'post',
+  'put',
+  'delete',
+  'patch',
+  'options',
+  'head',
+  'trace',
+])
+
+export function getOperationNodeId(path: string, method: string, opDetail: any): string {
+  const customId = opDetail?.operationId || opDetail?.id
+  if (typeof customId === 'string' && customId.trim()) {
+    return customId
+  }
+  return `${method.toUpperCase()} ${path}`
+}
+
 export function buildApiTree(openapiJson: { paths: any }) {
   const tagMap = new Map() // 存储 { tagName: { label: tagName, children: 接口列表 } }
 
@@ -72,7 +91,15 @@ export function buildApiTree(openapiJson: { paths: any }) {
   Object.entries(openapiJson.paths || {}).forEach(([path, methods]) => {
     // 遍历每个路径下的请求方法（get/post 等）
     Object.entries(methods || {}).forEach(([method, opDetail]) => {
-      const tags = opDetail.tags || ['未分组'] // 无 tag 时归为“未分组”
+      if (!HTTP_METHODS.has(method.toLowerCase())) {
+        return
+      }
+      const validTags = Array.isArray(opDetail?.tags)
+        ? opDetail.tags
+            .filter((tag: any) => typeof tag === 'string' && tag.trim())
+            .map((tag: string) => tag.trim())
+        : []
+      const tags = validTags.length > 0 ? validTags : ['未分组'] // 无 tag 或空 tag 时归为“未分组”
       tags.forEach((tag: any) => {
         // 初始化 tag 节点
         if (!tagMap.has(tag)) {
@@ -88,7 +115,7 @@ export function buildApiTree(openapiJson: { paths: any }) {
           summary: opDetail.summary || '无描述',
           path,
           method: method.toUpperCase(),
-          id: opDetail.operationId || opDetail.id,
+          id: getOperationNodeId(path, method, opDetail),
         })
       })
     })

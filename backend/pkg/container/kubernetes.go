@@ -8,6 +8,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/rest"
 
 	"github.com/kymo-mcp/mcpcan/pkg/k8s"
@@ -54,6 +55,32 @@ type KubernetesContainerManager struct {
 	Entry *k8s.Entry
 }
 
+// sanitizeK8sLabels strips labels that are not compatible with Kubernetes metadata constraints.
+// Key points:
+// 1) Docker-only Traefik labels (traefik.*) are intentionally dropped in K8s mode.
+// 2) Any key/value that fails K8s label validation is dropped to prevent Deployment creation failures.
+func sanitizeK8sLabels(labels map[string]string) map[string]string {
+	if len(labels) == 0 {
+		return nil
+	}
+
+	sanitized := make(map[string]string, len(labels))
+	for k, v := range labels {
+		// Docker provider labels are not valid/needed in Kubernetes mode.
+		if strings.HasPrefix(k, "traefik.") {
+			continue
+		}
+		if errs := validation.IsQualifiedName(k); len(errs) > 0 {
+			continue
+		}
+		if errs := validation.IsValidLabelValue(v); len(errs) > 0 {
+			continue
+		}
+		sanitized[k] = v
+	}
+	return sanitized
+}
+
 // Create creates container (Deployment)
 func (kcm *KubernetesContainerManager) Create(ctx context.Context, options ContainerCreateOptions) (string, error) {
 	// Initialize basic DeploymentCreateOptions
@@ -87,7 +114,7 @@ func (kcm *KubernetesContainerManager) Create(ctx context.Context, options Conta
 
 	// Set labels (if exist)
 	if len(options.Labels) > 0 {
-		deploymentOptions.Labels = options.Labels
+		deploymentOptions.Labels = sanitizeK8sLabels(options.Labels)
 	}
 
 	// Set annotations (if exist) — K8s 下 Traefik 路由配置通过 annotations 传递，规避 label 校验限制
@@ -421,6 +448,11 @@ type KubernetesServiceManager struct {
 // Create 创建 Service，若同名 Service 已存在则直接返回（幂等）。
 // 编辑实例时会重走 CreateContainer 流程，同名 Service 已存在属正常情况，不应报错。
 func (ksm *KubernetesServiceManager) Create(ctx context.Context, serviceName string, port int32, selector map[string]string) (*ServiceInfo, error) {
+	cleanSelector := sanitizeK8sLabels(selector)
+	if len(cleanSelector) == 0 {
+		return nil, fmt.Errorf("failed to create Service: selector is empty after sanitization")
+	}
+
 	svcCfg := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: serviceName,
@@ -432,7 +464,7 @@ func (ksm *KubernetesServiceManager) Create(ctx context.Context, serviceName str
 					Port: port,
 				},
 			},
-			Selector: selector,
+			Selector: cleanSelector,
 		},
 	}
 

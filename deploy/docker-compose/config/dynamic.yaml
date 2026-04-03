@@ -1,5 +1,8 @@
+# dynamic.yaml
+
 http:
   middlewares:
+    # Middleware to strip "/api" prefix from the path
     strip-api-prefix:
       stripPrefix:
         prefixes:
@@ -8,6 +11,7 @@ http:
       stripPrefix:
         prefixes:
           - "/"
+    # External Authentication Middleware (Forward Auth)
     external-auth:
       forwardAuth:
         address: "http://mcp-authz-svc:8081/authz/validate"
@@ -22,7 +26,37 @@ http:
           - "X-Custom-User-Info"
           - "X-Trace-Id"
 
+    # MCP Authentication Middleware (Market/Gateway) - DEPRECATED: Moving auth to sidecar
+    # mcp-gateway-forward-auth:
+    #   forwardAuth:
+    #     address: "http://mcp-market-svc:8080/market/gateway/auth"
+    #     trustForwardHeader: true
+    #     # 允许 Market 服务读取客户端的各类 Header
+    #     authRequestHeaders:
+    #       - "Authorization"
+    #       - "API-Key"
+    #       - "X-API-Key"
+    #       - "Content-Type"
+    #       - "Accept"
+    #       - "User-Agent"
+    #       - "X-Request-Id"
+    #       - "X-Session-Id"
+    #     # 允许 Market 服务将转换后的 Header 注入/覆盖到上游请求
+    #     authResponseHeaders:
+    #       - "X-Mcp-Instance-Id"
+    #       - "X-Mcp-User-Id"
+    #       - "Authorization" # 关键：允许 Token 转换
+    #       - "API-Key" # 关键：允许 Token 转换
+    #       - "X-API-Key" # 关键 : 允许 Token 转换
+    #       - "X-Custom-Metadata"
+    #       - "X-Trace-Id"
+
   routers:
+    # =========================================================================
+    # HTTP Routers (Port 80)
+    # =========================================================================
+
+    # Router for Public Authz endpoints (HTTP)
     authz-public:
       rule: "PathPrefix(`/api/authz/login`) || PathPrefix(`/api/authz/logout`) || PathPrefix(`/api/authz/register`) || PathPrefix(`/api/authz/refresh`) || PathPrefix(`/api/authz/validate`) || PathPrefix(`/api/authz/encryption-key`) || PathPrefix(`/health`) || PathPrefix(`/api/health`)"
       service: "authz-service"
@@ -31,7 +65,7 @@ http:
         - "strip-api-prefix"
       priority: 100
 
-    market-public:
+    market-pulic:
       rule: "PathPrefix(`/api/market/code/download`) || PathPrefix(`/api/market/openapi/download`)"
       service: "market-service"
       entryPoints: ["web"]
@@ -39,6 +73,8 @@ http:
         - "strip-api-prefix"
       priority: 100
 
+    # Router for Protected Authz endpoints
+    # Requires authentication
     authz-protected:
       rule: "PathPrefix(`/api/authz`)"
       service: "authz-service"
@@ -46,7 +82,10 @@ http:
       middlewares:
         - "strip-api-prefix"
         - "external-auth"
+      # Priority is automatically determined by rule length, but specific routes (longer) take precedence
 
+    # Router for Market endpoints
+    # Requires authentication
     market-router:
       rule: "PathPrefix(`/api/market`)"
       service: "market-service"
@@ -62,26 +101,33 @@ http:
       middlewares: []
       priority: 1000
 
+    # Router for the root web service
+    # Lower priority to avoid conflicts with /api routes
     web-router:
       rule: "PathPrefix(`/`)"
       service: "web-service"
       entryPoints: ["web"]
       middlewares:
         - "strip-web-prefix"
-      priority: 1
+      priority: 1 # Lower priority
 
   services:
+    # Authz Service Definition
     authz-service:
       loadBalancer:
         servers:
           - url: "http://mcp-authz-svc:8081"
 
+    # Market Service Definition
     market-service:
       loadBalancer:
         servers:
           - url: "http://mcp-market-svc:8080"
+          # - url: "http://host.docker.internal:8080"
 
+    # Web Service Definition
     web-service:
       loadBalancer:
         servers:
           - url: "http://mcp-web-svc:3000"
+        # serversTransport: "https-skip-verify-transport"

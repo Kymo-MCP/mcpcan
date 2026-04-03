@@ -193,6 +193,8 @@ data:
     init:
       admin_username: {{ .Values.services.init.loginUser.username }}
       admin_password: {{ .Values.services.init.loginUser.password }}
+      admin_password_policy: {{ .Values.services.init.adminPasswordPolicy | default "create_only" }}
+      menu_sync_policy: {{ .Values.services.init.menuSyncPolicy | default "add_only" }}
       admin_nickname: admin
       admin_role_name: admin
       admin_role_description: admin role

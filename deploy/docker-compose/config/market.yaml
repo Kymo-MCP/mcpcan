@@ -36,6 +36,8 @@ storage:
 init:
   admin_username: admin
   admin_password: admin123
+  admin_password_policy: create_only
+  menu_sync_policy: add_only
   admin_nickname: admin
   admin_role_name: admin
   admin_role_description: admin-role

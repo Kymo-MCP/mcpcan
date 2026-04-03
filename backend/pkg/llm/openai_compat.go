@@ -19,11 +19,11 @@ import (
 // 直接使用 HTTP Client 调用 API，支持标准及扩展字段（如 reasoning_content）
 // 替代 langchaingo 以获得对 API 字段的完整控制
 type OpenAICompatProvider struct {
-	BaseURL            string
-	APIKey             string
-	Client             *http.Client
-	ExtraHeaders       map[string]string // 额外请求头（如 OpenRouter 的 X-Title）
-	SupportsReasoning  bool              // 是否支持 reasoning_content（Kimi/DeepSeek）
+	BaseURL           string
+	APIKey            string
+	Client            *http.Client
+	ExtraHeaders      map[string]string // 额外请求头（如 OpenRouter 的 X-Title）
+	SupportsReasoning bool              // 是否支持 reasoning_content（Kimi/DeepSeek）
 }
 
 // NewOpenAICompatProvider creates a new OpenAICompatProvider
@@ -71,6 +71,7 @@ type oaiRequest struct {
 	Stream      bool         `json:"stream"`
 	Temperature float32      `json:"temperature,omitempty"`
 	Tools       []oaiTool    `json:"tools,omitempty"`
+	ToolChoice  string       `json:"tool_choice,omitempty"`
 }
 
 type oaiTool struct {
@@ -232,6 +233,11 @@ func (p *OpenAICompatProvider) StreamChat(ctx context.Context, req ChatRequest) 
 		Tools:       tools,
 	}
 
+	// 部分 OpenAI 兼容网关在仅传 tools 时不会自动启用工具模式，显式声明 auto 提高兼容性
+	if len(tools) > 0 {
+		apiReq.ToolChoice = "auto"
+	}
+
 	reqBody, err := json.Marshal(apiReq)
 	if err != nil {
 		return nil, err
@@ -335,9 +341,9 @@ func (p *OpenAICompatProvider) StreamChat(ctx context.Context, req ChatRequest) 
 							tcIndex = *tc.Index
 						}
 						sr.ToolCalls = append(sr.ToolCalls, ToolCall{
-							Index:        tcIndex,
-							ID:           tc.ID,
-							Type:         tc.Type,
+							Index: tcIndex,
+							ID:    tc.ID,
+							Type:  tc.Type,
 							Function: ToolCallFunction{
 								Name:      tc.Function.Name,
 								Arguments: tc.Function.Arguments,
