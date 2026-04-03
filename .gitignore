@@ -80,3 +80,7 @@ backend/tmp/
 
 # frontend
 frontend/.pnpm-store/
+
+# release package artifacts
+deploy/packages/
+*.tar.gz
